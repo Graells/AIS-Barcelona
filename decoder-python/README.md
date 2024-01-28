@@ -11,3 +11,8 @@ python3 decoder.py
 
 (pip install pyais)
 (pip freeze > requirements.txt)
+
+
+export FLASK_APP=decoder_service.py
+
+flask run
