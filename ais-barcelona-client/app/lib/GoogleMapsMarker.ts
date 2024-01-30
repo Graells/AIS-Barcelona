@@ -5,14 +5,12 @@ const GoogleMapsMarker = ({
   map: google.maps.Map;
   sentences: any[];
 }) => {
-  // Ensure sentences is an array before proceeding
   console.log("sentences", sentences);
   if (!Array.isArray(sentences)) {
     console.error("sentences is not an array");
     return;
   }
 
-  // Load marker library asynchronously
   google.maps
     .importLibrary("marker")
     .then((libraries) => {
@@ -26,13 +24,20 @@ const GoogleMapsMarker = ({
       });
 
       sentences.forEach((sentence) => {
+        const tankerImg = document.createElement("img");
+        if (sentence.ship_type) {
+          tankerImg.src =
+            sentence.ship_type > 79 && sentence.ship_type < 90
+              ? "/tanker.png"
+              : "/ship.png";
+        }
         if (sentence.lat && sentence.lon) {
           console.log("sentence", sentence);
           new AdvancedMarkerElement({
             map,
             position: { lat: sentence.lat, lng: sentence.lon },
             title: sentence.name,
-            // content: pinScaled.element,
+            content: tankerImg,
           });
         }
       });

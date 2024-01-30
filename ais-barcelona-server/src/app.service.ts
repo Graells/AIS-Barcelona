@@ -99,6 +99,7 @@ export class AppService {
         destination: vesselInfo.destination,
         callsign: vesselInfo.callsign,
         speed: latestMessage.speed,
+        ship_type: vesselInfo.ship_type,
         lastPositions: messages.map((msg) => ({ lat: msg.lat, lon: msg.lon })),
       });
     });

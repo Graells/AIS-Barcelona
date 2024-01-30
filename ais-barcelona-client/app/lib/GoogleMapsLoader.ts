@@ -3,7 +3,7 @@ import { Loader } from '@googlemaps/js-api-loader';
 const loadGoogleMapsApi = async () => {
   const loader = new Loader({
     apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY as string,
-    version: 'weekly',
+    version: "weekly",
     // libraries: ['places', 'geocoding'],
   });
   try {

@@ -15,7 +15,7 @@ const Mapa = ({ sentences }: { sentences: any[] }) => {
       const { Map } = (await google.maps.importLibrary(
         "maps"
       )) as google.maps.MapsLibrary;
-      let map = new Map(mapRef.current, {
+      let map = new Map(mapRef.current as HTMLDivElement, {
         center: { lat: 41.3874, lng: 2.1686 },
         zoom: 10,
         mapId: "DEMO_MAP_ID",
