@@ -3,6 +3,23 @@ import { fetchSentences } from "./lib/data";
 
 export default async function Home() {
   const sentences = await fetchSentences();
+  // const sentences = [
+  //   null,
+  //   null,
+  //   null,
+  //   null,
+  //   null,
+  //   null,
+  //   null,
+  //   null,
+  //   null,
+  //   null,
+  //   null,
+  //   null,
+  //   null,
+  //   null,
+  //   null,
+  // ];
 
   return (
     <div>
