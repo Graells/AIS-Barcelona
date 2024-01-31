@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import loadGoogleMapsApi from "@/app/lib/GoogleMapsLoader";
 import GoogleMapsMarker from "@/app/lib/GoogleMapsMarker";
+import GoogleMapsStyle from "@/app/lib/GoogleMapsStyle";
 
 const Mapa = ({ sentences }: { sentences: any[] }) => {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -16,10 +17,23 @@ const Mapa = ({ sentences }: { sentences: any[] }) => {
         "maps"
       )) as google.maps.MapsLibrary;
       let map = new Map(mapRef.current as HTMLDivElement, {
-        center: { lat: 41.3874, lng: 2.1686 },
-        zoom: 10,
-        mapId: "DEMO_MAP_ID",
+        center: { lat: 41.326938, lng: 2.169317 },
+        zoom: 12,
+        mapId: "4454e7c0063d29a3",
+        // disableDefaultUI: true,
+        zoomControl: true,
+        gestureHandling: "greedy",
+        mapTypeControl: true,
+        mapTypeControlOptions: {
+          style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+          mapTypeIds: ["roadmap", "terrain"],
+        },
+        scaleControl: true,
+        streetViewControl: false,
+        rotateControl: true,
+        fullscreenControl: true,
       });
+
       setMapInstance(map);
     };
 
@@ -30,7 +44,10 @@ const Mapa = ({ sentences }: { sentences: any[] }) => {
     <>
       <div className="h-[700px] m-20 border-4 border-black" ref={mapRef} />
       {mapInstance && (
-        <GoogleMapsMarker map={mapInstance} sentences={sentences} />
+        <div>
+          <GoogleMapsMarker map={mapInstance} sentences={sentences} />
+          {/* <GoogleMapsStyle map={mapInstance} /> */}
+        </div>
       )}
     </>
   );
