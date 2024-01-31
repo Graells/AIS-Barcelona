@@ -3,9 +3,8 @@
 @tailwind utilities;
 
 
-  /* set the default transition time */
   :root {
-    --delay-time: .5s;
+    --delay-time: .2s;
   }
   
   @keyframes drop {
@@ -13,19 +12,8 @@
       transform: translateY(-200px) scaleY(0.9);
       opacity: 0;
     }
-    5% {
-      opacity: 0.7;
-    }
-    50% {
-      transform: translateY(0px) scaleY(1);
-      opacity: 1;
-    }
-    65% {
-      transform: translateY(-17px) scaleY(0.9);
-      opacity: 1;
-    }
     75% {
-      transform: translateY(-22px) scaleY(0.9);
+      transform: translateY(-5px) scaleY(0.975); 
       opacity: 1;
     }
     100% {
@@ -35,4 +23,27 @@
   }
   .drop {
     animation: drop 0.5s linear forwards var(--delay-time);
+  }
+  
+
+  .name-tag {
+    background-color: #4285F4;
+    border-radius: 8px;
+    color: #FFFFFF;
+    font-size: 10px;
+    padding: 8px 12px;
+    position: relative;
+  }
+  
+  .name-tag::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translate(-50%, 0);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #4285F4;
   }
