@@ -7,7 +7,7 @@ const loadGoogleMapsApi = async () => {
     // libraries: ['places', 'geocoding'],
   });
   try {
-    await loader.importLibrary('core'); // maps
+    await loader.importLibrary("maps"); // maps
   } catch (error: any) {
     console.error(`Failed to load Google Maps: ${error.message}`);
   }

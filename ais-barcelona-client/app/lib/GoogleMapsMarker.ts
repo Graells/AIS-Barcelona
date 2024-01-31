@@ -14,13 +14,15 @@ const GoogleMapsMarker = ({
   google.maps
     .importLibrary("marker")
     .then((libraries) => {
-      const { AdvancedMarkerElement, PinElement } =
-        libraries as google.maps.MarkerLibrary;
+      const { AdvancedMarkerElement } = libraries as google.maps.MarkerLibrary;
 
-      const pinScaled = new PinElement({
-        scale: 1.5,
-        background: "#FBBC04",
-        glyphColor: "white",
+      const intersectionObserver = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("drop");
+            intersectionObserver.unobserve(entry.target);
+          }
+        }
       });
 
       sentences.forEach((sentence) => {
@@ -32,12 +34,35 @@ const GoogleMapsMarker = ({
               : "/ship.png";
         }
         if (sentence.lat && sentence.lon) {
-          console.log("sentence", sentence);
-          new AdvancedMarkerElement({
+          let collisionBehavior = google.maps.CollisionBehavior.REQUIRED;
+          const marker = new AdvancedMarkerElement({
             map,
             position: { lat: sentence.lat, lng: sentence.lon },
             title: sentence.name,
             content: tankerImg,
+            collisionBehavior,
+          });
+
+          const content = marker.content as HTMLElement;
+          content.style.opacity = "0";
+          content.addEventListener("animationend", (event) => {
+            content.classList.remove("drop");
+            content.style.opacity = "1";
+          });
+
+          const time = 2 + Math.random();
+          content.style.setProperty("--delay-time", time + "s");
+          intersectionObserver.observe(content);
+
+          const infowindow = new google.maps.InfoWindow({
+            content: sentence.name,
+            ariaLabel: "info window",
+          });
+          marker.addListener("click", () => {
+            infowindow.open({
+              anchor: marker,
+              map,
+            });
           });
         }
       });
