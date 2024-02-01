@@ -42,7 +42,10 @@ const Mapa = ({ sentences }: { sentences: any[] }) => {
 
   return (
     <>
-      <div className="h-[700px] m-20 border-4 border-black" ref={mapRef} />
+      <div
+        className="mx-5 h-[700px] rounded-xl border-4 border-black md:mx-20"
+        ref={mapRef}
+      />
       {mapInstance && (
         <div>
           <GoogleMapsMarker map={mapInstance} sentences={sentences} />
