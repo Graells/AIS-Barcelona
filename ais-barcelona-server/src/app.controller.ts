@@ -1,12 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { AisDecoderService } from './modules/ais-decoder/ais-decoder.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly aisDecoderService: AisDecoderService) {}
 
   @Get('/decode-ais-messages')
   decodeAisMessages(): any {
-    return this.appService.decodeAisMessages();
+    return this.aisDecoderService.decodeAisMessages();
   }
 }

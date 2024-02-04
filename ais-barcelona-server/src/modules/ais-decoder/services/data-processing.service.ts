@@ -1,11 +1,7 @@
-import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { lastValueFrom } from 'rxjs';
 
 @Injectable()
-export class AppService {
-  constructor(private httpService: HttpService) {}
-
+export class DataProcessingService {
   private padWithZero(value: number): string {
     return value < 10 ? `0${value}` : value.toString();
   }
@@ -62,7 +58,7 @@ export class AppService {
     return msg1;
   }
 
-  private processData(aisData: any[]): any[] {
+  public processData(aisData: any[]): any[] {
     const mmsiDataMap = new Map<
       number,
       { latestMessage: any; messages: any[] }
@@ -105,12 +101,5 @@ export class AppService {
     });
 
     return result;
-  }
-
-  public async decodeAisMessages(): Promise<any> {
-    const pythonServiceUrl = 'http://127.0.0.1:5000/get-decoded-json';
-    const response$ = this.httpService.get(pythonServiceUrl);
-    const response = await lastValueFrom(response$);
-    return this.processData(response.data);
   }
 }
