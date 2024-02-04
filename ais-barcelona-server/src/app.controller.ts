@@ -9,4 +9,9 @@ export class AppController {
   decodeAisMessages(): any {
     return this.aisDecoderService.decodeAisMessages();
   }
+
+  @Get('/')
+  getHello(): string {
+    return 'Hello World!';
+  }
 }

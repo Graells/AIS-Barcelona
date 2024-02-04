@@ -1,15 +1,24 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class AisDataService {
-  constructor(private httpService: HttpService) {}
+  private pythonServiceUrl: string;
+
+  constructor(
+    private httpService: HttpService,
+    configService: ConfigService,
+  ) {
+    this.pythonServiceUrl =
+      configService.get<string>('ais.pythonServerUrl') ||
+      'http://127.0.0.1:5000/get-decoded-json';
+  }
 
   public async fetchDecodedMessages(): Promise<any> {
-    const pythonServiceUrl = 'http://127.0.0.1:5000/get-decoded-json';
-    const response$ = this.httpService.get(pythonServiceUrl);
+    const response$ = this.httpService.get(this.pythonServiceUrl);
     const response = await lastValueFrom(response$);
-    return response.data; // Return the data directly from the external service
+    return response.data;
   }
 }
