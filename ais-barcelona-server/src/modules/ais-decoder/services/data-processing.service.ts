@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { Sentence } from '../dto/sentence';
+import { VesselData } from '../dto/vesselData';
 
 @Injectable()
 export class DataProcessingService {
@@ -58,7 +60,7 @@ export class DataProcessingService {
     return msg1;
   }
 
-  public processData(aisData: any[]): any[] {
+  public processData(aisData: Sentence[]): VesselData[] {
     const mmsiDataMap = new Map<
       number,
       { latestMessage: any; messages: any[] }
