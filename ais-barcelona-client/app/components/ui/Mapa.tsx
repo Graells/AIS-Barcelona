@@ -2,10 +2,11 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import loadGoogleMapsApi from "@/app/lib/GoogleMapsLoader";
-import GoogleMapsMarker from "@/app/lib/GoogleMapsMarker";
-import GoogleMapsStyle from "@/app/lib/GoogleMapsStyle";
+import GoogleMapsMarker from '@/app/components/ui/GoogleMapsMarker';
+import GoogleMapsStyle from '@/app/components/theme/GoogleMapsStyle';
+import { VesselData } from '@/app/definitions/vesselData';
 
-const Mapa = ({ sentences }: { sentences: any[] }) => {
+const Mapa = ({ sentences }: { sentences: VesselData[] }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
 
@@ -14,19 +15,19 @@ const Mapa = ({ sentences }: { sentences: any[] }) => {
     const initializeMap = async () => {
       if (!mapRef.current) return;
       const { Map } = (await google.maps.importLibrary(
-        "maps"
+        'maps',
       )) as google.maps.MapsLibrary;
       let map = new Map(mapRef.current as HTMLDivElement, {
         center: { lat: 41.326938, lng: 2.169317 },
         zoom: 12,
-        mapId: "4454e7c0063d29a3",
+        mapId: '4454e7c0063d29a3',
         // disableDefaultUI: true,
         zoomControl: true,
-        gestureHandling: "greedy",
+        gestureHandling: 'greedy',
         mapTypeControl: true,
         mapTypeControlOptions: {
           style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
-          mapTypeIds: ["roadmap", "terrain"],
+          mapTypeIds: ['roadmap', 'terrain'],
         },
         scaleControl: true,
         streetViewControl: false,
