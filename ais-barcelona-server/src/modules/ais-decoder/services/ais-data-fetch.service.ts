@@ -5,7 +5,7 @@ import { lastValueFrom } from 'rxjs';
 import { Sentence } from '../dto/sentence';
 
 @Injectable()
-export class AisDataService {
+export class AisDataFetchService {
   private pythonServiceUrl: string;
 
   constructor(
@@ -17,7 +17,7 @@ export class AisDataService {
       'http://127.0.0.1:5000/get-decoded-json';
   }
 
-  public async fetchDecodedMessages(): Promise<Sentence[]> {
+  public async fetchDecodedMessagesFromPyais(): Promise<Sentence[]> {
     const response$ = this.httpService.get(this.pythonServiceUrl);
     const response = await lastValueFrom(response$);
     return response.data;

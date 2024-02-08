@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { AisDecoderService } from './ais-decoder.service';
 import { DataProcessingService } from './services/data-processing.service';
-import { AisDataService } from './services/ais-data.service';
+import { AisDataFetchService } from './services/ais-data-fetch.service';
 
 @Module({
   imports: [HttpModule],
-  providers: [AisDecoderService, DataProcessingService, AisDataService],
+  providers: [AisDecoderService, DataProcessingService, AisDataFetchService],
   exports: [AisDecoderService],
 })
 export class AisDecoderModule {}
