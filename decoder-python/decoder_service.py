@@ -7,6 +7,10 @@ app = Flask(__name__)
 
 @app.route('/get-decoded-json', methods=['GET'])
 def get_decoded_json():
+    fetch_result = fetchLatestFromRaspberry()
+    if fetch_result != "Success":
+        return fetch_result
+
     script_path = './decoder-json.py'
     result = subprocess.run(['python', script_path], capture_output=True, text=True)
 
@@ -21,6 +25,10 @@ def get_decoded_json():
 
 @app.route('/get-decoded-csv', methods=['GET'])
 def decode():
+    fetch_result = fetchLatestFromRaspberry()
+    if fetch_result != "Success":
+        return fetch_result
+    
     script_path = './decoder-csv.py'
     result = subprocess.run(['python', script_path], capture_output=True, text=True)
     
@@ -31,3 +39,15 @@ def decode():
 
 if __name__ == '__main__':
     app.run(port=5000)
+
+
+def fetchLatestFromRaspberry():
+    script_path = './fetchLatestFromRaspberry.sh'
+    result = subprocess.run([script_path], shell=True, capture_output=True, text=True)
+    
+    if result.returncode != 0:
+        print(f"Script Error: {result.stderr}")
+        return f"Error: {result.stderr}", 500
+    else:
+        print(f"Script Output: {result.stdout}")
+        return "Success"
