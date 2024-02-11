@@ -12,7 +12,7 @@ from pyais.filter import (
     NoneFilter
 )
 
-filename = pathlib.Path(__file__).parent.joinpath('input/2024012416AIS.txt')
+filename = pathlib.Path(__file__).parent.joinpath('input/freshAIS.txt')
 filtered_data = []
 unfiltered_data = []
 
