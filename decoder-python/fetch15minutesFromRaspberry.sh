@@ -1,9 +1,16 @@
 
 #!/bin/bash
+source .env
+
+ping -c 1 $SSH_HOST &>/dev/null
+if [ $? -ne 0 ]; then
+    echo "Raspberry Pi is not reachable. Check if it has turned off or if is connected to the internet."
+    exit 1
+fi
 
 CMD="find /home/pi/Desktop/test_AIS -type f -name 'AIS_to_send.txt'"
 
-LATEST_15=$(ssh -i /Users/xaviergraells/.ssh/id_rsa_raspberrypi_compatible pi@147.83.10.152 "$CMD")
+LATEST_15=$(ssh -i "$SSH_KEY_PATH" "$SSH_USERNAME@$SSH_HOST" "$CMD")
 
 echo $LATEST_15
 
@@ -12,6 +19,6 @@ if [ -z "$LATEST_15" ]; then
     exit 1
 fi
 
-scp -i /Users/xaviergraells/.ssh/id_rsa_raspberrypi_compatible "pi@147.83.10.152:$LATEST_15" "/Users/xaviergraells/Desktop/TFG2024/AIS-Barcelona/decoder-python/input/tags.txt"
+scp -i "$SSH_KEY_PATH" "$SSH_USERNAME@$SSH_HOST:$LATEST_15" "$DESTINATION_PATH_15"
 
 echo "Latest .txt |$LATEST_TXT| file copied to tags.txt successfully."
