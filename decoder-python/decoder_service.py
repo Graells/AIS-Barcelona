@@ -63,8 +63,9 @@ def fetchLatestFromRaspberry():
     result = subprocess.run([script_path], shell=True, capture_output=True, text=True)
     
     if result.returncode != 0:
-        print(f"Script Error: {result.stderr}")
-        return f"Error: {result.stderr}", 500
+        error_output = result.stderr.strip() if result.stderr else result.stdout.strip()
+        print(f"Script Error: {error_output}")
+        return f"Error: {error_output}", 500
     else:
         print(f"Script Output: {result.stdout}")
         return "Success"
