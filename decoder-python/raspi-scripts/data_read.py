@@ -33,6 +33,23 @@ while 1:
     f.write(cadena)
     f.close()
 
+    #### tests below ####
+
+    base_path = '/home/pi/Desktop/test_AIS/'
+    if not os.path.exists(base_path):
+        os.makedirs(base_path)
+    timestamp = datetime.datetime.now() # datetime.datetime.now(datetime.UTC).timestamp()
+    formatted_timestamp = timestamp.strftime('%Y%m%d%H%M%S')
+    prefix = '\\c:' + formatted_timestamp + '*A\\'
+    ftest_name = base_path + 'AIS_' + timestamp.strftime('%H') + '_current.txt'
+    ft=open(ftest_name, "a+")
+    ft.write(prefix + x[:-2] + '\n')
+    ft.close()
+    f15_name = base_path + 'AIS_15m.txt'
+    f15=open(f15_name, "a+")
+    f15.write(prefix + x[:-2] + '\n')
+    f15.close()
+
 
 
 
