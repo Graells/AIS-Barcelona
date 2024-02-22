@@ -1,10 +1,11 @@
 import Mapa from "@/app/components/ui/Mapa";
-import { fetchSentences } from './lib/data-fetch';
+import { fetchSentences, fetchTags } from './lib/data-fetch';
 import NavBar from './components/ui/NavBar';
 import { VesselData } from './definitions/vesselData';
 
 export default async function Home() {
-  const sentences: VesselData[] = await fetchSentences();
+  // const sentences: VesselData[] = await fetchSentences();
+  const sentences: any[] = await fetchTags();
   // const sentences = [null, null, null];
 
   return (
