@@ -22,7 +22,7 @@ def get_decoded_json():
 
     return jsonify(decoded_data)
 
-@app.route('/get-decoded-15', methods=['GET'])
+@app.route('/get-decoded-tags', methods=['GET'])
 def get_decoded_15():
     fetch_result = fetch15minutesFromRaspberry()
     if fetch_result != "Success":
