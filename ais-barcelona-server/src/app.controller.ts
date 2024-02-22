@@ -10,6 +10,11 @@ export class AppController {
     return this.aisDecoderService.decodeAisMessages();
   }
 
+  @Get('/decode-ais-tags')
+  decodeAisTags(): any {
+    return this.aisDecoderService.decodeAisTags();
+  }
+
   @Get('/')
   getHello(): string {
     return 'Hello World!';

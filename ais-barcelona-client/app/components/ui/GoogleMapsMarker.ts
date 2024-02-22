@@ -10,6 +10,9 @@ const GoogleMapsMarker = ({
   map: google.maps.Map;
   sentences: VesselData[];
 }) => {
+
+  let openInfoWindow: any = null;
+
   if (!Array.isArray(sentences)) {
     console.error('sentences is not an array');
     return;
@@ -100,11 +103,20 @@ const GoogleMapsMarker = ({
           const infowindow = CreateInfoWindow(sentence);
 
           marker.addListener('click', () => {
+            if (openInfoWindow) {
+              openInfoWindow.close();
+            }
             infowindow.open({
               anchor: marker,
               map,
             });
+            openInfoWindow = infowindow;
           });
+        }
+      });
+      google.maps.event.addListener(map, 'click', () => {
+        if (openInfoWindow) {
+          openInfoWindow.close();
         }
       });
     })
