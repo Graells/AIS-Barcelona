@@ -100,7 +100,7 @@ const GoogleMapsMarker = ({
           content.style.setProperty('--delay-time', time + 's');
           intersectionObserver.observe(content);
 
-          const infowindow = CreateInfoWindow(sentence);
+          const infowindow = CreateInfoWindow(sentence, map);
 
           marker.addListener('click', () => {
             if (openInfoWindow) {
