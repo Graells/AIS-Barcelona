@@ -41,15 +41,14 @@ while 1:
     timestamp = datetime.datetime.now() # datetime.datetime.now(datetime.UTC).timestamp()
     formatted_timestamp = timestamp.strftime('%Y%m%d%H%M%S')
     prefix = '\\c:' + formatted_timestamp + '*A\\'
-    ftest_name = base_path + 'AIS_' + timestamp.strftime('%H') + '_current.txt'
-    ft=open(ftest_name, "a+")
-    ft.write(prefix + x[:-2] + '\n')
-    ft.close()
     f15_name = base_path + 'AIS_15m.txt'
     f15=open(f15_name, "a+")
     f15.write(prefix + x[:-2] + '\n')
     f15.close()
-
+    ftest_name = base_path + timestamp.strftime('%Y%m%d') + '_24_AIS.txt'
+    ft=open(ftest_name, "a+")
+    ft.write(prefix + x[:-2] + '\n')
+    ft.close()
 
 
 
