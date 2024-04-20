@@ -3,6 +3,8 @@ import { MarkerWithLabel } from '@googlemaps/markerwithlabel';
 import CreateInfoWindow from './CreateInfoWindow';
 import { VesselData } from '@/app/definitions/vesselData';
 
+const markers: any[] = [];
+
 const GoogleMapsMarker = ({
   map,
   sentences,
@@ -10,13 +12,15 @@ const GoogleMapsMarker = ({
   map: google.maps.Map;
   sentences: VesselData[];
 }) => {
-
   let openInfoWindow: any = null;
 
   if (!Array.isArray(sentences)) {
     console.error('sentences is not an array');
     return;
   }
+
+  markers.forEach((marker) => marker.setMap(null));
+  markers.length = 0; // Reset the markers array
 
   google.maps
     .importLibrary('marker')
@@ -48,6 +52,9 @@ const GoogleMapsMarker = ({
             content: shipImg,
             collisionBehavior,
           });
+
+          markers.push(marker);
+
           if (sentence.name && sentence.name != 'Unknown') {
             const nameTag = document.createElement('div');
             nameTag.className = 'name-tag';
@@ -59,6 +66,9 @@ const GoogleMapsMarker = ({
               position: { lat: labelLat, lng: sentence.lon },
               content: nameTag,
             });
+
+            markers.push(labelMarker);
+
             google.maps.event.addListener(map, 'zoom_changed', function () {
               let zoomLevel = map.getZoom() || 0;
               let latOffset;

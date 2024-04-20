@@ -4,9 +4,9 @@ import base64
 
 from pyais.stream import FileReaderStream
 
-def process_file(filename):
+def process_data(data):
     decoded_data_with_timestamps = []
-    for msg in FileReaderStream(str(filename)):
+    for msg in data:
         try:
             msg.tag_block.init()
             tags = msg.tag_block.asdict()
@@ -31,25 +31,36 @@ def is_msg_type_in_range(msg_type):
     return 1 <= msg_type <= 5
 
 def filter_data(decoded_data):
-    filtered_by_msg_type = [entry for entry in decoded_data if is_msg_type_in_range(entry.get('msg_type'))]
-    filtered_by_mmsi = [entry for entry in filtered_by_msg_type if is_valid_mmsi(entry.get('mmsi'))]
-    return filtered_by_mmsi
+    return [
+        entry for entry in decoded_data
+        if is_msg_type_in_range(entry.get('msg_type')) and is_valid_mmsi(entry.get('mmsi'))
+    ]
 
 def write_to_json(data, output_path):
     json_output = json.dumps(data)
     with open(output_path, 'w') as json_file:
         json_file.write(json_output)
 
+def read_and_combine_files(*filenames):
+    combined_data = []
+    for filename in filenames:
+        with FileReaderStream(str(filename)) as file_reader:
+            combined_data.extend(file_reader)
+    return combined_data
+
 base_path = pathlib.Path(__file__).parent
 today_file = base_path.joinpath('input/today.txt')
 yesterday_file = base_path.joinpath('input/yesterday.txt')
 
-today_data = process_file(today_file)
-yesterday_data = process_file(yesterday_file)
+# Read and combine raw file contents before processing
+combined_raw_data = read_and_combine_files(today_file, yesterday_file)
 
-today_filtered = filter_data(today_data)
-yesterday_filtered = filter_data(yesterday_data)
+# Process the combined raw data
+processed_data = process_data(combined_raw_data)
 
-combined_data = today_filtered + yesterday_filtered
+# Filter the processed data
+filtered_data = filter_data(processed_data)
 
-write_to_json(combined_data, base_path.joinpath('output/combined_decoded_2448.json'))
+# Write the filtered data to JSON
+output_path = base_path.joinpath('output/combined_decoded_2448.json')
+write_to_json(filtered_data, output_path)
