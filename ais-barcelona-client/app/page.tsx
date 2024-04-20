@@ -38,13 +38,12 @@ export default function Home() {
   const vesselTypeCounts = countVesselTypes(sentences);
 
   return (
-    <main className="min-h-screen bg-blue-50 p-4">
-      <NavBar />
+    <main className="">
       <div className=" mx-5 md:mx-20">
         <Mapa sentences={sentences} />
         <div className="flex flex-col">
           <button
-            className="mt-2 rounded bg-blue-500 px-4 py-2 text-white transition duration-200 ease-in-out hover:bg-blue-600"
+            className="mt-2 rounded border-2 border-black px-4 py-2 transition duration-200 ease-in-out hover:bg-slate-200 dark:border-white dark:hover:bg-slate-600 "
             onClick={loadData}
             disabled={loading}
           >
