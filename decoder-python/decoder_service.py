@@ -39,6 +39,23 @@ def get_decoded_15():
 
     return jsonify(decoded_data)
 
+@app.route('/get-decoded-2448', methods=['GET'])
+def get_decoded_2448():
+    fetch_result = fetch2448FromRaspberry()
+    if fetch_result != "Success":
+        return fetch_result
+
+    script_path = './decoder-2448.py'
+    result = subprocess.run(['python', script_path], capture_output=True, text=True)
+
+    if result.returncode != 0:
+        return f"Error: {result.stderr}", 500
+    
+    with open('output/decoded_tags.json', 'r') as json_file:
+        decoded_data = json.load(json_file)
+
+    return jsonify(decoded_data)
+
 
 @app.route('/get-decoded-csv', methods=['GET'])
 def decode():
@@ -72,6 +89,19 @@ def fetchLatestFromRaspberry():
 
 def fetch15minutesFromRaspberry():
     script_path = './fetch15minutesFromRaspberry.sh'
+    result = subprocess.run([script_path], shell=True, capture_output=True, text=True)
+    
+    if result.returncode != 0:
+        error_output = result.stderr.strip() if result.stderr else result.stdout.strip()
+
+        print(f"Script Error: {error_output}")
+        return f"Error: {error_output}", 500
+    else:
+        print(f"Script Output: {result.stdout}")
+        return "Success"
+
+def fetch2448FromRaspberry():
+    script_path = './fetch2448FromRaspberry.sh'
     result = subprocess.run([script_path], shell=True, capture_output=True, text=True)
     
     if result.returncode != 0:
