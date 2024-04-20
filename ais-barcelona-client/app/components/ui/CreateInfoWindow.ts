@@ -50,7 +50,13 @@ const drawTrackLine = (
   if (currentPolyline) {
     currentPolyline.setMap(null);
   }
-  const path = positions.map((position) => ({
+  const uniquePositions = positions.filter(
+    (value, index, self) =>
+      index ===
+      self.findIndex((t) => t.lat === value.lat && t.lon === value.lon),
+  );
+
+  const path = uniquePositions.map((position) => ({
     lat: position.lat,
     lng: position.lon,
   }));

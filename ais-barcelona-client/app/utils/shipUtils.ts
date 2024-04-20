@@ -1,3 +1,5 @@
+import { VesselData } from '../definitions/vesselData';
+
 export const getShipImageUrl = (shipType: number) => {
   switch (shipType) {
     case 30:
@@ -15,6 +17,17 @@ export const getShipImageUrl = (shipType: number) => {
       return '/sailing.png';
     case 37:
       return '/pleasure_craft.png';
+    case 40:
+    case 41:
+    case 42:
+    case 43:
+    case 44:
+    case 45:
+    case 46:
+    case 47:
+    case 48:
+    case 49:
+      return '/high_speed_craft.png';
     case 50:
       return '/pilot_vessel.png';
     case 51:
@@ -29,6 +42,8 @@ export const getShipImageUrl = (shipType: number) => {
       return '/law_enforcement.png';
     case 58:
       return '/medical_transport.png';
+    case 59:
+      return '/military.png';
     case 60:
     case 61:
     case 62:
@@ -84,6 +99,17 @@ export const getShipType = (shipType: number): string => {
       return 'Sailing';
     case 37:
       return 'Pleasure Craft';
+    case 40:
+    case 41:
+    case 42:
+    case 43:
+    case 44:
+    case 45:
+    case 46:
+    case 47:
+    case 48:
+    case 49:
+      return 'High Speed Craft';
     case 50:
       return 'Pilot Vessel';
     case 51:
@@ -98,6 +124,8 @@ export const getShipType = (shipType: number): string => {
       return 'Law Enforcement';
     case 58:
       return 'Medical Transport';
+    case 59:
+      return 'Non-Combatant';
     case 60:
     case 61:
     case 62:
@@ -134,4 +162,17 @@ export const getShipType = (shipType: number): string => {
     default:
       return 'Other';
   }
+};
+
+export const countVesselTypes = (sentences: VesselData[]) => {
+  const counts: { [key: string]: number } = {};
+  sentences.forEach((vessel) => {
+    const typeName: string = getShipType(vessel.ship_type || 0);
+    if (counts[typeName]) {
+      counts[typeName]++;
+    } else {
+      counts[typeName] = 1;
+    }
+  });
+  return counts;
 };

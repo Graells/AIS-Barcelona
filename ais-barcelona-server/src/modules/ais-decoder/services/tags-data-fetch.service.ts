@@ -13,7 +13,7 @@ export class TagsDataFetchService {
   ) {
     this.pythonServiceUrl =
       configService.get<string>('ais.pythonServerUrlTags') ||
-      'http://127.0.0.1:5000/get-decoded-tags';
+      'http://127.0.0.1:5000/get-decoded-2448'; // get-decoded-tags
   }
 
   public async fetchDecodedTagsFromPyais(): Promise<any[]> {

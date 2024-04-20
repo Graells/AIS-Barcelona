@@ -8,6 +8,8 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const SERVER_PORT = configService.get<number>('SERVER_PORT', 3001);
 
+  app.enableCors();
+
   await app.listen(SERVER_PORT, () =>
     new Logger('SERVER').log(`Server Running on port: ${SERVER_PORT}`),
   );

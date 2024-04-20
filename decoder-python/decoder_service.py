@@ -51,7 +51,7 @@ def get_decoded_2448():
     if result.returncode != 0:
         return f"Error: {result.stderr}", 500
     
-    with open('output/decoded_tags.json', 'r') as json_file:
+    with open('output/combined_decoded_2448.json', 'r') as json_file:
         decoded_data = json.load(json_file)
 
     return jsonify(decoded_data)

@@ -10,7 +10,7 @@ export class AppController {
     return this.aisDecoderService.decodeAisMessages();
   }
 
-  @Get('/decode-ais-tags')
+  @Get('/decode-2448') // ais-tags
   decodeAisTags(): any {
     return this.aisDecoderService.decodeAisTags();
   }
