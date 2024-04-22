@@ -47,3 +47,14 @@
     border-right: 8px solid transparent;
     border-top: 8px solid #4285F4;
   }
+
+  .dot {
+    position: absolute;
+    width: 7px;  
+    height: 7px; 
+    background-color: black; 
+    border-radius: 50%; 
+    cursor: pointer; 
+    transform: translate(-50%, -50%);
+  }
+  

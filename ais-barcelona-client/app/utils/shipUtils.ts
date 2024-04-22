@@ -1,5 +1,55 @@
 import { VesselData } from '../definitions/vesselData';
 
+export const allShipTypes: string[] = [
+  'Fishing',
+  'Towing',
+  'Dredging',
+  'Diving',
+  'Military',
+  'Sailing',
+  'Pleasure Craft',
+  'High Speed Craft',
+  'Pilot Vessel',
+  'Search and Rescue',
+  'Tug',
+  'Port Tender',
+  'Anti-Pollution',
+  'Law Enforcement',
+  'Medical Transport',
+  'Non-Combatant',
+  'Passenger',
+  'Cargo',
+  'Tanker',
+  'Other',
+];
+
+const shipTypeToImagePath: { [key: string]: string } = {
+  Fishing: '/fishing.png',
+  Towing: '/towing.png',
+  Dredging: '/dredging.png',
+  Diving: '/diving.png',
+  Military: '/military.png',
+  Sailing: '/sailing.png',
+  'Pleasure Craft': '/pleasure_craft.png',
+  'High Speed Craft': '/high_speed_craft.png',
+  'Pilot Vessel': '/pilot_vessel.png',
+  'Search and Rescue': '/search_rescue.png',
+  Tug: '/tug.png',
+  'Port Tender': '/port_tender.png',
+  'Anti-Pollution': '/anti_pollution.png',
+  'Law Enforcement': '/law_enforcement.png',
+  'Medical Transport': '/medical_transport.png',
+  'Non-Combatant': '/military.png',
+  Passenger: '/passenger.png',
+  Cargo: '/cargo.png',
+  Tanker: '/tanker.png',
+  Other: '/ship.png',
+};
+
+export const getImagePathFromShipTypeName = (shipTypeName: string): string => {
+  return shipTypeToImagePath[shipTypeName] || '/ship.png';
+};
+
 export const getShipImageUrl = (shipType: number) => {
   switch (shipType) {
     case 30:
@@ -164,15 +214,24 @@ export const getShipType = (shipType: number): string => {
   }
 };
 
-export const countVesselTypes = (sentences: VesselData[]) => {
-  const counts: { [key: string]: number } = {};
+export const countVesselTypes = (
+  sentences: VesselData[],
+): { [key: string]: number } => {
+  const counts: { [key: string]: number } = allShipTypes.reduce(
+    (acc, type) => {
+      acc[type] = 0;
+      return acc;
+    },
+    {} as { [key: string]: number },
+  );
+
   sentences.forEach((vessel) => {
-    const typeName: string = getShipType(vessel.ship_type || 0);
-    if (counts[typeName]) {
+    const typeName = getShipType(vessel.ship_type || 0);
+    if (typeName in counts) {
       counts[typeName]++;
-    } else {
-      counts[typeName] = 1;
     }
   });
+
   return counts;
 };
+
