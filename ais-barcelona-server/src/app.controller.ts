@@ -5,11 +5,6 @@ import { AisDecoderService } from './modules/ais-decoder/ais-decoder.service';
 export class AppController {
   constructor(private readonly aisDecoderService: AisDecoderService) {}
 
-  @Get('/decode-ais-messages')
-  decodeAisMessages(): any {
-    return this.aisDecoderService.decodeAisMessages();
-  }
-
   @Get('/decode-2448') // ais-tags
   decodeAisTags(): any {
     return this.aisDecoderService.decodeAisTags();
