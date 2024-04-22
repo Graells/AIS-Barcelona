@@ -6,7 +6,7 @@ const CreateInfoWindow = (
 ): google.maps.InfoWindow => {
   const shipTypeName = getShipType(vessel.ship_type);
   const contentString = `
-  <div style="padding: 8px; font-family: sans-serif;">
+  <div style="padding: 8px; font-family: sans-serif; color: black;">
     <h2 style="font-size: 1.25rem; font-weight: 700;">${vessel.name}</h2>
     <p style="margin: 4px 0;"><strong>MMSI:</strong> ${vessel.mmsi}</p>
     <p style="margin: 4px 0;"><strong>Destination:</strong> ${vessel.destination || 'N/A'}</p>
@@ -27,6 +27,7 @@ const CreateInfoWindow = (
     const trackButton = document.getElementById('trackButton');
     if (trackButton) {
       trackButton.addEventListener('click', () => {
+        clearExistingMarkers();
         infoWindow.close();
         drawTrackLine(vessel.positions, map);
       });
@@ -43,13 +44,22 @@ const formatTimestamp = (timestamp: string | undefined): string => {
 };
 
 let currentPolyline: any = null;
-const drawTrackLine = (
-  positions: Array<{ lat: number; lon: number }>,
-  map: google.maps.Map,
-) => {
+let currentMarkers: any = [];
+
+const clearExistingMarkers = () => {
+  currentMarkers.forEach((marker: any) => marker.setMap(null));
+  currentMarkers = [];
   if (currentPolyline) {
     currentPolyline.setMap(null);
   }
+  if (currentPolyline) {
+    currentPolyline.setMap(null);
+  }
+};
+const drawTrackLine = (
+  positions: Array<{ lat: number; lon: number; timestamp: string }>,
+  map: google.maps.Map,
+) => {
   const uniquePositions = positions.filter(
     (value, index, self) =>
       index ===
@@ -70,6 +80,45 @@ const drawTrackLine = (
 
   polyline.setMap(map);
   currentPolyline = polyline;
+
+  let lastAddedTime = new Date(0);
+
+  const parseTimestamp = (timestamp: string) => {
+    return new Date(
+      parseInt(timestamp.substring(0, 4), 10), // year
+      parseInt(timestamp.substring(4, 6), 10) - 1, // month (0-based)
+      parseInt(timestamp.substring(6, 8), 10), // day
+      parseInt(timestamp.substring(8, 10), 10), // hour
+      parseInt(timestamp.substring(10, 12), 10), // minute
+      parseInt(timestamp.substring(12, 14), 10), // second
+    );
+  };
+
+  uniquePositions.forEach((position) => {
+    const positionTime = parseTimestamp(position.timestamp);
+    if (positionTime.getTime() - lastAddedTime.getTime() >= 960000) {
+      const tag = document.createElement('div');
+      tag.className = 'dot';
+      // tag.textContent = formatTimestamp(position.timestamp);
+      const marker = new google.maps.marker.AdvancedMarkerElement({
+        position: { lat: position.lat, lng: position.lon },
+        map: map,
+        content: tag,
+        title: formatTimestamp(position.timestamp),
+      });
+
+      const infoWindow = new google.maps.InfoWindow({
+        content: `<div style="color: black">Timestamp: ${formatTimestamp(position.timestamp)}</div>`,
+      });
+
+      marker.addListener('click', () => {
+        infoWindow.open(map, marker);
+      });
+
+      currentMarkers.push(marker);
+      lastAddedTime = positionTime;
+    }
+  });
 };
 
 export default CreateInfoWindow;

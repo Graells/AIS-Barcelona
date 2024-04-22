@@ -8,5 +8,9 @@ export type VesselData = {
   callsign: string | undefined;
   speed: number | undefined;
   ship_type: number | undefined;
-  lastPositions: { lat: number | undefined; lon: number | undefined }[];
+  positions: {
+    lat: number | undefined;
+    lon: number | undefined;
+    timestamp: string;
+  }[];
 };
