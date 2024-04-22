@@ -48,7 +48,7 @@ export default function Home() {
   });
 
   return (
-    <main className="mx-5 md:mx-20">
+    <main className="mx-auto max-w-4xl">
       <Mapa sentences={sentences} />
       <div className="flex flex-col">
         <button
