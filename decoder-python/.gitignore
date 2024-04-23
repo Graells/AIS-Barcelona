@@ -39,3 +39,5 @@ profiling_results
 venv/
 build/
 .env
+input/
+output/
