@@ -10,8 +10,9 @@ def cleanup_old_files(base_path):
     today = datetime.datetime.now().strftime('%Y%m%d')
     yesterday = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y%m%d')
 
-    today_file = os.path.join(base_path, f'{today}_24_AIS.txt')
-    yesterday_file = os.path.join(base_path, f'{yesterday}_24_AIS.txt')
+    today_file = os.path.join(base_path, '{}_24_AIS.txt'.format(today))
+    yesterday_file = os.path.join(base_path, '{}_24_AIS.txt'.format(yesterday))
+
 
     if not os.path.exists(today_file):
         open(today_file, 'a').close()

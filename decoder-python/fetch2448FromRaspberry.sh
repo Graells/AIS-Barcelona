@@ -7,8 +7,13 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+#!/bin/bash
 TODAY_FILE=$(date +%Y%m%d)_24_AIS.txt
-YESTERDAY_FILE=$(date --date='yesterday' +%Y%m%d)_24_AIS.txt
+YESTERDAY_FILE=$(date -v-1d +%Y%m%d)_24_AIS.txt
+
+echo "Today's file: $TODAY_FILE"
+echo "Yesterday's file: $YESTERDAY_FILE"
+
 
 CMD_TODAY="find /home/pi/Desktop/test_AIS -type f -name $TODAY_FILE"
 CMD_YESTERDAY="find /home/pi/Desktop/test_AIS -type f -name $YESTERDAY_FILE"
