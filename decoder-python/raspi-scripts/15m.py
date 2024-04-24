@@ -1,26 +1,27 @@
 #!/usr/bin/env python3
 import time
 import shutil
-import os
 import datetime
+import os
 
 base_path = '/home/pi/Desktop/test_AIS/'
 
 def cleanup_old_files(base_path):
-    today = datetime.datetime.now().strftime('%Y%m%d')
-    yesterday = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y%m%d')
-
-    today_file = os.path.join(base_path, '{}_24_AIS.txt'.format(today))
-    yesterday_file = os.path.join(base_path, '{}_24_AIS.txt'.format(yesterday))
-
-
-    if not os.path.exists(today_file):
-        open(today_file, 'a').close()
+    current_time = datetime.datetime.now()
+    cutoff_time = current_time - datetime.timedelta(hours=12)
+    print("Current time:", current_time)
+    print("Cutoff time:", cutoff_time)
 
     for file_name in os.listdir(base_path):
-        if file_name.endswith('_24_AIS.txt') and file_name not in {os.path.basename(today_file), os.path.basename(yesterday_file)}:
-            os.remove(os.path.join(base_path, file_name))
-
+        if file_name.endswith('_AIS.txt'):
+            file_time_str = file_name[:-8]
+            try:
+                file_time = datetime.datetime.strptime(file_time_str, '%Y%m%d%H')
+                if file_time < cutoff_time:
+                    os.remove(os.path.join(base_path, file_name))
+                    print("Removed old file: {}".format(file_name))
+            except ValueError:
+                print("Skipping invalid file: {}".format(file_name))
 
 
 while True:
