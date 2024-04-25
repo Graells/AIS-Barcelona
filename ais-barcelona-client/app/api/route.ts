@@ -15,7 +15,7 @@ const proxy = createProxyMiddleware({
   target: url,
   changeOrigin: true,
   pathRewrite: {
-    '^/api/proxy': '',
+    '^/api': '',
   },
   secure: false, // Important to avoid SSL validation if the target server is not HTTPS
 });
