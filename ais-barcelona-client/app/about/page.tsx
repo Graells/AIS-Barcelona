@@ -52,7 +52,7 @@ const AboutPage: React.FC = () => {
       </main>
       <footer>
         <p className="mt-8 text-sm">
-          © 2024 FNB Visualization Tool for Vessel Positions Within FNB&apos;s
+          2024 FNB Visualization Tool for Vessel Positions Within FNB&apos;s
           Radius
         </p>
       </footer>
