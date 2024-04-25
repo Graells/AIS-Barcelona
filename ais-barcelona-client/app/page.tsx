@@ -61,10 +61,8 @@ export default function Home() {
         <div className="mt-4">
           <p>Last update requested at: {lastUpdated}</p>
           <h1>Total number of vessels monitored: {sentences.length}</h1>
-          <p>
-            The data is guaranteed from the past 24 hours and may include
-            information up to the last 48 hours.
-          </p>
+          <p>The data is from the last 12 hours.</p>
+          <p>Updates every 90 seconds to 2 minuts(click refresh button).</p>
           <div className="mt-4 rounded-xl bg-white p-4 shadow">
             <h2 className="border-b p-2 text-center text-black">
               Type of vessels monitored:

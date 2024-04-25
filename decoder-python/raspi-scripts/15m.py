@@ -1,33 +1,16 @@
 #!/usr/bin/env python3
 import time
 import shutil
-import os
 import datetime
+import os
 
 base_path = '/home/pi/Desktop/test_AIS/'
-
-def cleanup_old_files(base_path):
-    today = datetime.datetime.now().strftime('%Y%m%d')
-    yesterday = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime('%Y%m%d')
-
-    today_file = os.path.join(base_path, '{}_24_AIS.txt'.format(today))
-    yesterday_file = os.path.join(base_path, '{}_24_AIS.txt'.format(yesterday))
-
-
-    if not os.path.exists(today_file):
-        open(today_file, 'a').close()
-
-    for file_name in os.listdir(base_path):
-        if file_name.endswith('_24_AIS.txt') and file_name not in {os.path.basename(today_file), os.path.basename(yesterday_file)}:
-            os.remove(os.path.join(base_path, file_name))
-
 
 
 while True:
     current_file = os.path.join(base_path, 'AIS_15m.txt')
     to_send_file = os.path.join(base_path, 'AIS_to_send.txt')
     
-    cleanup_old_files(base_path)
 
     time.sleep(900)  # 15 minutes 
 

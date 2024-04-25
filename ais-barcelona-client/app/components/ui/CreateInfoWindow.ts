@@ -96,7 +96,7 @@ const drawTrackLine = (
 
   uniquePositions.forEach((position) => {
     const positionTime = parseTimestamp(position.timestamp);
-    if (positionTime.getTime() - lastAddedTime.getTime() >= 960000) {
+    if (positionTime.getTime() - lastAddedTime.getTime() >= 300000) {
       const tag = document.createElement('div');
       tag.className = 'dot';
       // tag.textContent = formatTimestamp(position.timestamp);

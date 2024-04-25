@@ -45,7 +45,8 @@ while 1:
     f15=open(f15_name, "a+")
     f15.write(prefix + x[:-2] + '\n')
     f15.close()
-    ftest_name = base_path + timestamp.strftime('%Y%m%d') + '_24_AIS.txt'
+    ftest_name = base_path + timestamp.strftime('%Y%m%d%H') + '_AIS.txt'
+    # ftest_name = base_path + timestamp.strftime('%Y%m%d') + '_24_AIS.txt'
     ft=open(ftest_name, "a+")
     ft.write(prefix + x[:-2] + '\n')
     ft.close()

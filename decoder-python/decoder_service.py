@@ -1,114 +1,25 @@
-from flask import Flask, send_from_directory, jsonify
-import os
-import subprocess
+from flask import Flask, jsonify
 import json
+import pathlib
+from flask_cors import CORS
 
 app = Flask(__name__)
-
-@app.route('/get-decoded-json', methods=['GET'])
-def get_decoded_json():
-    fetch_result = fetchLatestFromRaspberry()
-    if fetch_result != "Success":
-        return fetch_result
-
-    script_path = './decoder-json.py'
-    result = subprocess.run(['python', script_path], capture_output=True, text=True)
-
-    if result.returncode != 0:
-        return f"Error: {result.stderr}", 500
-    
-    with open('output/decoded_data.json', 'r') as json_file:
-        decoded_data = json.load(json_file)
-
-    return jsonify(decoded_data)
-
-@app.route('/get-decoded-tags', methods=['GET'])
-def get_decoded_15():
-    fetch_result = fetch15minutesFromRaspberry()
-    if fetch_result != "Success":
-        return fetch_result
-
-    script_path = './decoder-tags.py'
-    result = subprocess.run(['python', script_path], capture_output=True, text=True)
-
-    if result.returncode != 0:
-        return f"Error: {result.stderr}", 500
-    
-    with open('output/decoded_tags.json', 'r') as json_file:
-        decoded_data = json.load(json_file)
-
-    return jsonify(decoded_data)
+CORS(app)
 
 @app.route('/get-decoded-2448', methods=['GET'])
 def get_decoded_2448():
-    fetch_result = fetch2448FromRaspberry()
-    if fetch_result != "Success":
-        return fetch_result
+    """Endpoint to retrieve processed vessel data."""
+    base_path = pathlib.Path(__file__).parent
+    output_path = base_path / 'output' / 'combined_decoded_2448.json'
 
-    script_path = './decoder-2448.py'
-    result = subprocess.run(['python', script_path], capture_output=True, text=True)
-
-    if result.returncode != 0:
-        return f"Error: {result.stderr}", 500
-    
-    with open('output/combined_decoded_2448.json', 'r') as json_file:
-        decoded_data = json.load(json_file)
-
-    return jsonify(decoded_data)
-
-
-@app.route('/get-decoded-csv', methods=['GET'])
-def decode():
-    fetch_result = fetchLatestFromRaspberry()
-    if fetch_result != "Success":
-        return fetch_result
-    
-    script_path = './decoder-csv.py'
-    result = subprocess.run(['python', script_path], capture_output=True, text=True)
-    
-    if result.returncode != 0:
-        return f"Error: {result.stderr}", 500
-
-    return send_from_directory('output', 'decoded_messages.csv')
+    try:
+        with open(output_path, 'r') as json_file:
+            decoded_data = json.load(json_file)
+        return jsonify(decoded_data)
+    except FileNotFoundError:
+        return jsonify({"error": "Requested file not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(port=5000)
-
-
-def fetchLatestFromRaspberry():
-    script_path = './fetchLatestFromRaspberry.sh'
-    result = subprocess.run([script_path], shell=True, capture_output=True, text=True)
-    
-    if result.returncode != 0:
-        error_output = result.stderr.strip() if result.stderr else result.stdout.strip()
-        print(f"Script Error: {error_output}")
-        return f"Error: {error_output}", 500
-    else:
-        print(f"Script Output: {result.stdout}")
-        return "Success"
-
-def fetch15minutesFromRaspberry():
-    script_path = './fetch15minutesFromRaspberry.sh'
-    result = subprocess.run([script_path], shell=True, capture_output=True, text=True)
-    
-    if result.returncode != 0:
-        error_output = result.stderr.strip() if result.stderr else result.stdout.strip()
-
-        print(f"Script Error: {error_output}")
-        return f"Error: {error_output}", 500
-    else:
-        print(f"Script Output: {result.stdout}")
-        return "Success"
-
-def fetch2448FromRaspberry():
-    script_path = './fetch2448FromRaspberry.sh'
-    result = subprocess.run([script_path], shell=True, capture_output=True, text=True)
-    
-    if result.returncode != 0:
-        error_output = result.stderr.strip() if result.stderr else result.stdout.strip()
-
-        print(f"Script Error: {error_output}")
-        return f"Error: {error_output}", 500
-    else:
-        print(f"Script Output: {result.stdout}")
-        return "Success"
+    app.run(host='0.0.0.0', port=5000, threaded=True)

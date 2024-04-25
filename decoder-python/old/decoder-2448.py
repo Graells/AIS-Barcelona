@@ -4,22 +4,24 @@ import base64
 
 from pyais.stream import FileReaderStream
 
-def process_data(data):
+def process_data(filenames):
     decoded_data_with_timestamps = []
-    for msg in data:
-        try:
-            msg.tag_block.init()
-            tags = msg.tag_block.asdict()
-            receiver_timestamp = tags.get("receiver_timestamp") 
-            decoded = msg.decode()
-            decoded_dict = decoded.asdict()
-            decoded_dict['receiver_timestamp'] = receiver_timestamp
-            for key, value in decoded_dict.items():
-                if isinstance(value, bytes):
-                    decoded_dict[key] = base64.b64encode(value).decode('utf-8')
-            decoded_data_with_timestamps.append(decoded_dict)
-        except Exception as e:
-            print(f"Error decoding message: {msg}. Error: {e}")
+    for filename in filenames:
+        with FileReaderStream(str(filename)) as file_reader:
+            for msg in file_reader:
+                try:
+                    msg.tag_block.init()
+                    tags = msg.tag_block.asdict()
+                    receiver_timestamp = tags.get("receiver_timestamp")
+                    decoded = msg.decode()
+                    decoded_dict = decoded.asdict()
+                    decoded_dict['receiver_timestamp'] = receiver_timestamp
+                    for key, value in decoded_dict.items():
+                        if isinstance(value, bytes):
+                            decoded_dict[key] = base64.b64encode(value).decode('utf-8')
+                    decoded_data_with_timestamps.append(decoded_dict)
+                except Exception as e:
+                    print(f"Error decoding message: {msg}. Error: {e}")
     return decoded_data_with_timestamps
 
 def is_valid_mmsi(mmsi):
