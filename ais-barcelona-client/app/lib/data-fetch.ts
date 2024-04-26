@@ -1,6 +1,6 @@
 const url = process.env.NEXT_PUBLIC_API_URL as string;
 export async function fetchTags() {
-  const response = await fetch('/api/get-decoded-2448', {
+  const response = await fetch(url, {
     // 3001/get-decoded-2448
     // ais-tags
     // next: { revalidate: 60 },
