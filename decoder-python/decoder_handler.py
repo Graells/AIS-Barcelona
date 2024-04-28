@@ -8,6 +8,7 @@ from pyais.stream import FileReaderStream
 from dataclasses import dataclass, field
 from sortedcontainers import SortedDict
 from typing import Optional, Dict, Tuple
+import sqlite3
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -55,6 +56,18 @@ def vessel_data_to_dict(vessel_data):
         "positions": [position_to_dict(pos) for pos in vessel_data.positions.values()]
     }
 
+def insert_or_update_vessel_data(vessel_data):
+    conn = sqlite3.connect('decoded_data.db')
+    cursor = conn.cursor()
+    data_json = json.dumps(vessel_data_to_dict(vessel_data))
+    cursor.execute('SELECT id FROM decoded_data WHERE mmsi = ?', (vessel_data.mmsi,))
+    record = cursor.fetchone()
+    if record:
+        cursor.execute('UPDATE decoded_data SET data = ? WHERE mmsi = ?', (data_json, vessel_data.mmsi))
+    else:
+        cursor.execute('INSERT INTO decoded_data (mmsi, data) VALUES (?, ?)', (vessel_data.mmsi, data_json))
+    conn.commit()
+    conn.close()
 
 class TagsProcessingService:
     def __init__(self):
@@ -86,6 +99,7 @@ class TagsProcessingService:
                 vessel_data.lat = latest_position.lat
                 vessel_data.lon = latest_position.lon
                 vessel_data.lastUpdateTime = latest_position.timestamp
+            insert_or_update_vessel_data(vessel_data)
         self.timing_data['update_positions'].append(time.time() - start_update_positions)
 
         total_time = time.time() - start_time

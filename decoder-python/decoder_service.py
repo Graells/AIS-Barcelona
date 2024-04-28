@@ -2,9 +2,31 @@ from flask import Flask, jsonify
 import json
 import pathlib
 from flask_cors import CORS
+import sqlite3
 
 app = Flask(__name__)
 CORS(app)
+
+def get_db_connection():
+    """Create and return a connection to the database."""
+    conn = sqlite3.connect('decoded_data.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+@app.route('/get-database', methods=['GET'])
+def get_database():
+    """Endpoint to retrieve processed vessel data from the database."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('SELECT data FROM decoded_data')
+        records = cursor.fetchall()
+        vessel_data = [json.loads(row['data']) for row in records]
+        return jsonify(vessel_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
 
 @app.route('/get-decoded-2448', methods=['GET'])
 def get_decoded_2448():
