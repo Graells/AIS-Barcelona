@@ -47,9 +47,11 @@ function NavBar() {
           <ThemeSwitch />
         </div>
       </ul>
-      <h1 className="ml-2 text-xl font-black md:mb-3 md:mt-2">
-        Monitoring of Vessels Within FNB&apos;s Radius
-      </h1>
+      <div className="md:w-[1100px]">
+        <h1 className="ml-2 text-left text-xl font-black text-sky-500 md:mb-3 md:mt-2">
+          Monitoring of Vessels Within FNB&apos;s Radius
+        </h1>
+      </div>
     </nav>
   );
 }

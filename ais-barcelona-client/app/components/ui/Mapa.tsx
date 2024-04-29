@@ -34,7 +34,12 @@ const Mapa = ({ sentences }: { sentences: VesselData[] }) => {
         rotateControl: true,
         fullscreenControl: true,
       });
-
+      const legendElement = document.getElementById('legend');
+      if (legendElement) {
+        map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(
+          legendElement,
+        );
+      }
       setMapInstance(map);
     };
 

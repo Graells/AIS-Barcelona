@@ -48,43 +48,57 @@ export default function Home() {
   });
 
   return (
-    <main className="md:mx-20 md:flex md:flex-row md:justify-center">
+    <main className="md:mx-auto md:w-[1100px]">
       <div>
         <Mapa sentences={sentences} />
         <div className="flex flex-col">
           <button
-            className="mt-1 rounded-md border-2 border-black px-4 py-2 font-bold transition duration-200 ease-in-out hover:bg-slate-200 dark:border-white dark:hover:bg-slate-600"
+            className="mt-1 rounded-md border-2 border-black bg-green-200 px-4 py-2 font-bold text-black transition duration-200 ease-in-out hover:bg-green-300 dark:border-white dark:hover:bg-green-300"
             onClick={loadData}
             disabled={loading}
           >
             {loading ? 'Loading...' : 'Refresh Real-Time Data'}
           </button>
           <div className="mt-2">
-            <p>Last update requested at: {lastUpdated}</p>
-            <h1>Total number of vessels monitored: {sentences.length}</h1>
             <p>
+              Last update requested at:{' '}
+              <span className="font-bold ">{lastUpdated}</span>
+            </p>
+            <h1>
+              Total number of vessels monitored:{' '}
+              <span className="font-bold ">{sentences.length}</span>
+            </h1>
+            <p className="font-bold text-sky-500 ">
               The data is from the last 12 hours, range is about 50km radius
               from FNB.
             </p>
+
             <p>Updates every 90 seconds to 2 minuts(click refresh button).</p>
           </div>
         </div>
       </div>
-      <div className="mt-4 h-[700px] w-[290px] overflow-y-auto rounded-md border-2 p-2 md:fixed md:right-0 md:my-0 md:mr-16 ">
-        <h2 className=" p-2 text-center">
-          Type of vessels currently monitored:
+      <div
+        id="legend"
+        className="mr-1 mt-4 h-[200px] w-[140px] overflow-y-auto rounded-md border border-black bg-[#8AC0FF] p-2 dark:border-white md:my-0 md:h-[500px] md:w-[200px] "
+      >
+        <h2 className="p-2 text-center text-xs">
+          Legend. Type of vessels currently monitored:
         </h2>
         <ul>
           {sortedShipTypes.map((type: string) => (
             <li
               key={type}
-              className="mb-1 flex flex-row items-center justify-center gap-2 rounded-md border p-2 dark:border-white"
+              className="mb-1 flex flex-row items-center gap-2 rounded-md border border-black p-2 text-xs  dark:border-white"
             >
               <Image
                 src={getImagePathFromShipTypeName(type)}
                 alt={type}
                 width={50}
-                height={50}
+                height={40}
+                style={{
+                  width: '50px',
+                  height: 'auto',
+                }}
               />
               {`${type}: ${vesselTypeCounts[type as keyof typeof vesselTypeCounts] || 0}`}
             </li>

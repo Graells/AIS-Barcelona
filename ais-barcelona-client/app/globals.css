@@ -58,8 +58,24 @@
     transform: translate(-50%, -50%);
   }
   
-  /* @font-face {
-    font-family: 'TiemposText';
-    src: url('/components/theme/Tiempos-Text-Regular.ttf') format('truetype');
-    font-weight: 400;
-  } */
+
+#legend::-webkit-scrollbar {
+  width: 4px; 
+  height: 4px; 
+}
+
+#legend::-webkit-scrollbar-thumb {
+  background-color: black; 
+  border-radius: 10px; 
+ 
+}
+
+#legend::-webkit-scrollbar-track {
+  border-radius: 10px; 
+}
+
+#legend {
+  scrollbar-color: black #8AC0FF; 
+  scrollbar-width: thin; 
+}
+

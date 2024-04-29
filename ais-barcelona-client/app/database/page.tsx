@@ -133,7 +133,7 @@ export default function Database() {
         />
         <button
           onClick={handleSearch}
-          className="h-[38px] rounded-r border-2 border-black px-4 py-1 font-bold hover:bg-slate-200 dark:border-white dark:hover:bg-slate-600"
+          className="h-[38px] rounded-r border-2 border-black bg-green-200 px-4 py-1 font-bold hover:bg-green-300  dark:border-white"
         >
           Search
         </button>
