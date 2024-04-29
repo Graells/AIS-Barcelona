@@ -44,7 +44,7 @@ const Mapa = ({ sentences }: { sentences: VesselData[] }) => {
   return (
     <>
       <div
-        className=" h-[700px] rounded-xl border-4 border-black dark:border-white"
+        className=" mx-0.5 h-[430px] rounded-md border-2 border-black dark:border-white md:h-[700px] md:w-[1100px]"
         ref={mapRef}
       />
       {mapInstance && (

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProviders } from './components/theme/theme-provider';
 import NavBar from './components/ui/NavBar';
+import { robotoMono } from './components/theme/fonts';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={robotoMono.className}>
         <ThemeProviders>
           <NavBar />
 

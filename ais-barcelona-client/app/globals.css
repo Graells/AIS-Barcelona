@@ -58,3 +58,8 @@
     transform: translate(-50%, -50%);
   }
   
+  /* @font-face {
+    font-family: 'TiemposText';
+    src: url('/components/theme/Tiempos-Text-Regular.ttf') format('truetype');
+    font-weight: 400;
+  } */

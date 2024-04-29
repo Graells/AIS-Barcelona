@@ -2,13 +2,13 @@ import React from 'react';
 
 const AboutPage: React.FC = () => {
   return (
-    <div className="mx-auto max-w-4xl p-10">
+    <div className="mx-auto max-w-4xl p-7">
       <header>
-        <h1 className="mb-4 text-3xl font-bold">About the Project</h1>
+        <h1 className="mb-4 text-xl font-bold">About the Project</h1>
       </header>
       <main className="space-y-8">
         <section>
-          <h2 className="text-2xl font-semibold">Introduction</h2>
+          <h2 className="text-xl font-semibold">Introduction</h2>
           <p className="mt-2 text-base">
             In this project, a visualization tool is developed to leverage the
             data obtained from one of FNB&apos;s AIS antennas. This antenna
@@ -18,7 +18,7 @@ const AboutPage: React.FC = () => {
         </section>
 
         <section>
-          <h2 className="text-2xl font-semibold">System Architecture</h2>
+          <h2 className="text-xl font-semibold">System Architecture</h2>
           <p className="mt-2 text-base">
             The system employs a Raspberry Pi linked to the AIS antenna, which,
             in real-time, communicates with a server. This server processes,
@@ -38,7 +38,7 @@ const AboutPage: React.FC = () => {
         </section>
 
         <section>
-          <h2 className="text-2xl font-semibold">Objectives and Impact</h2>
+          <h2 className="text-xl font-semibold">Objectives and Impact</h2>
           <p className="mt-2 text-base">
             The project&apos;s objective is to create an infrastructure to
             leverage the data collected by a private AIS antenna receiver. This

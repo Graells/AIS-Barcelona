@@ -7,8 +7,8 @@ import ThemeSwitch from '../theme/ThemeSwitch';
 
 const links = [
   { name: 'Home', href: '/', icon: null },
-  { name: 'About', href: '/about', icon: null },
   { name: 'Database', href: '/database', icon: null },
+  { name: 'About', href: '/about', icon: null },
 ];
 
 function NavBar() {
@@ -22,17 +22,14 @@ function NavBar() {
   };
 
   return (
-    <nav className="flex h-20 items-center justify-center">
-      <h1 className="text-bold">
-        Monitoring of Vessels Within FNB&apos;s Radius
-      </h1>
-      <ul className="flex flex-row  gap-5">
+    <nav className="mt-3 flex flex-col items-center justify-center">
+      <ul className="flex flex-row  gap-2">
         {links.map((link) => (
           <li key={link.href}>
             <Link
               href={link.href}
               className={cn(
-                'flex h-[40px] items-center justify-center gap-2 rounded-xl border-2 border-black p-2 text-sm font-medium hover:bg-slate-200 dark:border-white dark:hover:bg-slate-600  md:px-2',
+                'flex h-[35px] items-center justify-center gap-2 rounded border-2 border-black p-2 text-sm font-bold hover:bg-slate-200 dark:border-white dark:hover:bg-slate-600  md:px-2',
                 {
                   'bg-slate-200 dark:bg-slate-600': isActiveLink(
                     link.href,
@@ -50,6 +47,9 @@ function NavBar() {
           <ThemeSwitch />
         </div>
       </ul>
+      <h1 className="ml-2 text-xl font-black md:mb-3 md:mt-2">
+        Monitoring of Vessels Within FNB&apos;s Radius
+      </h1>
     </nav>
   );
 }
