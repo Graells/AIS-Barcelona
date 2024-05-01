@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from flask import Flask, jsonify
 import json
 import pathlib
@@ -23,6 +24,27 @@ def get_database():
         records = cursor.fetchall()
         vessel_data = [json.loads(row['data']) for row in records]
         return jsonify(vessel_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+@app.route('/current-vessels', methods=['GET'])
+def get_recent_updates():
+    """Endpoint to retrieve recent vessel data based on lastUpdateTime."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        one_hour_ago = datetime.now() - timedelta(hours=1)
+
+        cursor.execute('SELECT data FROM decoded_data')
+        records = cursor.fetchall()
+        recent_vessels = [
+            json.loads(row['data']) for row in records 
+            if 'lastUpdateTime' in json.loads(row['data']) and 
+               datetime.strptime(json.loads(row['data'])['lastUpdateTime'], '%Y%m%d%H%M%S') >= one_hour_ago
+        ]
+        return jsonify(recent_vessels)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

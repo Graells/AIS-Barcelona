@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import time
 import json
 import base64
@@ -68,6 +69,31 @@ def insert_or_update_vessel_data(vessel_data):
         cursor.execute('INSERT INTO decoded_data (mmsi, data) VALUES (?, ?)', (vessel_data.mmsi, data_json))
     conn.commit()
     conn.close()
+
+def cleanup_old_data():
+    conn = sqlite3.connect('decoded_data.db')
+    cursor = conn.cursor()
+    twelve_hours_ago = datetime.now() - timedelta(hours=12)
+    
+    cursor.execute('SELECT id, data FROM decoded_data')
+    records = cursor.fetchall()
+
+    for record in records:
+        vessel_data = json.loads(record[1])
+        date_format = "%Y%m%d%H%M%S"
+        
+        new_positions = [pos for pos in vessel_data.get('positions', []) if datetime.strptime(pos['timestamp'], date_format) >= twelve_hours_ago]
+
+        if not new_positions or (vessel_data.get('lastUpdateTime') and datetime.strptime(vessel_data['lastUpdateTime'], date_format) < twelve_hours_ago):
+            cursor.execute('DELETE FROM decoded_data WHERE id = ?', (record[0],))
+        else:
+            if new_positions != vessel_data['positions']:
+                vessel_data['positions'] = new_positions
+                cursor.execute('UPDATE decoded_data SET data = ? WHERE id = ?', (json.dumps(vessel_data), record[0]))
+
+    conn.commit()
+    conn.close()
+
 
 class TagsProcessingService:
     def __init__(self):
@@ -230,6 +256,9 @@ def main_loop():
         logging.info("Starting data processing loop.")
         run_fetch_script()
         process_and_save_data()
+        start = time.time()
+        cleanup_old_data()
+        log_time_taken(start, "Cleanup old data")
         logging.info("Data processing completed. Waiting 90 seconds.")
         time.sleep(90)
 
