@@ -10,6 +10,7 @@ import {
   allShipTypes,
 } from './utils/shipUtils';
 import Image from 'next/image';
+import Dropup from './components/ui/Dropup';
 
 export default function Home() {
   const [sentences, setSentences] = useState<VesselData[]>([]);
@@ -116,7 +117,16 @@ export default function Home() {
               </div>
             </div>
             <div>
-              <select
+              <Dropup
+                options={[
+                  { value: 'allData', label: 'All vessels from last 12h' },
+                  { value: 'currentData', label: 'Current vessels in range' },
+                ]}
+                selectedOption={selectedOption}
+                onChange={(value) => handleSelectChange({ target: { value } })}
+                disabled={loading}
+              />
+              {/* <select
                 className="mt-1 rounded-md border-2 border-black p-2 transition duration-200 ease-in-out hover:bg-slate-200 dark:border-white"
                 value={selectedOption}
                 onChange={handleSelectChange}
@@ -124,7 +134,7 @@ export default function Home() {
               >
                 <option value="allData">All vessels from last 12h</option>
                 <option value="currentData">Current vessels in range</option>
-              </select>
+              </select> */}
             </div>
           </div>
         </div>
