@@ -41,3 +41,4 @@ build/
 .env
 input/
 output/
+decoded_data.db
