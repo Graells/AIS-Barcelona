@@ -48,11 +48,11 @@ const Dropup: React.FC<DropdownProps> = ({
         <span className="float-right ml-2">{isOpen ? '⏶' : '⏵'} </span>
       </button>
       {isOpen && (
-        <ul className="absolute right-0 top-[-100%] z-10 w-full translate-y-[-75%] overflow-auto rounded-md border-2 border-black bg-white shadow-lg dark:border-white dark:bg-black">
-          {options.map((option) => (
+        <ul className="absolute bottom-full z-10 w-full overflow-auto rounded-md border-2 border-black bg-white shadow-lg dark:border-white dark:bg-black">
+          {options.map((option, index) => (
             <li
               key={option.value}
-              className="cursor-pointer px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-600 "
+              className={`cursor-pointer px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-600 ${index < options.length - 1 ? 'border-b-2' : ''}`}
               onClick={() => {
                 onChange(option.value);
                 setIsOpen(false);
