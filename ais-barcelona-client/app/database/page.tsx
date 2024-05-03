@@ -3,7 +3,7 @@
 import { useState, useEffect, ChangeEvent, KeyboardEvent } from 'react';
 import { VesselData } from '../definitions/vesselData';
 import { getShipType } from '../utils/shipUtils';
-import { fetchAll, fetchCurrent } from '../lib/data-fetch';
+import { fetchAll, fetchCurrent, fetchTwelve } from '../lib/data-fetch';
 import Dropdown from '../components/ui/Dropdown';
 
 const portPolygon = [
@@ -26,11 +26,27 @@ export default function Database() {
 
   const loadData = (value: string) => {
     setLoading(true);
-    const fetchData = value === 'allData' ? fetchAll : fetchCurrent;
-    fetchData().then((data) => {
-      setVessels(data);
-      setLoading(false);
-    });
+
+    let fetchData;
+    if (value === 'allData') {
+      fetchData = fetchAll;
+    } else if (value === 'currentData') {
+      fetchData = fetchCurrent;
+    } else if (value === 'twelveData') {
+      fetchData = fetchTwelve;
+    } else {
+      fetchData = fetchAll;
+    }
+
+    fetchData()
+      .then((data) => {
+        setVessels(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Failed to fetch data:', error);
+        setLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -44,7 +60,7 @@ export default function Database() {
 
   const handleSearch = () => {
     if (!searchQuery.trim()) {
-      setVessels(vessels);
+      // setVessels(vessels);
       setFilteredVessels([]);
     } else {
       setLoading(true);
@@ -78,7 +94,7 @@ export default function Database() {
   };
   const handleResetSearch = () => {
     setSearchQuery('');
-    setFilteredVessels(vessels);
+    setFilteredVessels([]);
   };
 
   const formatTimestamp = (timestamp: string | undefined): string => {
@@ -167,8 +183,15 @@ export default function Database() {
         <div className="mr-5">
           <Dropdown
             options={[
-              { value: 'allData', label: 'All vessels from last 12h' },
-              { value: 'currentData', label: 'Current vessels in range' },
+              { value: 'allData', label: 'All vessels from last 24h' },
+              {
+                value: 'currentData',
+                label: 'Current vessels in range (last 24h)',
+              },
+              {
+                value: 'twelveData',
+                label: 'Current vessels in range (last 12h)',
+              },
             ]}
             selectedOption={selectedOption}
             onChange={(value) => handleSelectChange({ target: { value } })}

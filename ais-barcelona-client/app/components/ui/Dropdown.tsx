@@ -40,12 +40,12 @@ const Dropdown: React.FC<DropdownProps> = ({
   return (
     <div className="relative mt-2" ref={dropdownRef}>
       <button
-        className={`w-full rounded-md border-2 border-black px-2 py-1 text-left shadow-sm focus:outline-none  dark:border-white ${disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
+        className={`w-full rounded-md border-2 border-black px-2 py-1 text-left shadow-sm focus:outline-none dark:border-white ${disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
       >
         {options.find((option) => option.value === selectedOption)?.label || ''}
-        <span className="float-right ml-1">&#9660;</span>
+        <span className="float-right ml-2">{isOpen ? '⏷' : '⏵'} </span>
       </button>
       {isOpen && (
         <ul className="absolute right-0 top-full z-10 mt-0.5 w-full overflow-auto rounded-md border-2 border-black bg-white shadow-lg dark:border-white dark:bg-black">

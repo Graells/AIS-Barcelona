@@ -29,7 +29,7 @@ def get_database():
     finally:
         conn.close()
 
-@app.route('/current-vessels', methods=['GET'])
+@app.route('/get-current-vessels', methods=['GET'])
 def get_recent_updates():
     """Endpoint to retrieve recent vessel data based on lastUpdateTime."""
     conn = get_db_connection()
@@ -45,6 +45,49 @@ def get_recent_updates():
                datetime.strptime(json.loads(row['data'])['lastUpdateTime'], '%Y%m%d%H%M%S') >= one_hour_ago
         ]
         return jsonify(recent_vessels)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
+
+def parse_timestamp(timestamp):
+    try:
+        return datetime.strptime(timestamp, '%Y%m%d%H%M%S')
+    except ValueError:
+        try:
+            return datetime.strptime(timestamp.split(':')[1], '%Y%m%d%H%M%S')
+        except ValueError:
+            return None
+        
+@app.route('/get-last-12-hours', methods=['GET'])
+def get_last_12_hours():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        twelve_hours_ago = datetime.now() - timedelta(hours=12)
+        one_hour_ago = datetime.now() - timedelta(hours=1)
+        cursor.execute('SELECT data FROM decoded_data')
+        records = cursor.fetchall()
+
+        vessels_with_recent_updates_and_positions = []
+        for row in records:
+            vessel = json.loads(row[0])
+            last_update_time = vessel.get('lastUpdateTime')
+            if last_update_time:
+                last_update_datetime = parse_timestamp(last_update_time)
+                if last_update_datetime < one_hour_ago:
+                    continue
+
+            filtered_positions = [
+                pos for pos in vessel.get('positions', [])
+                if parse_timestamp(pos['timestamp']) and parse_timestamp(pos['timestamp']) >= twelve_hours_ago
+            ]
+
+            if filtered_positions:
+                vessel['positions'] = filtered_positions
+                vessels_with_recent_updates_and_positions.append(vessel)
+
+        return jsonify(vessels_with_recent_updates_and_positions)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

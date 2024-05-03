@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Mapa from '@/app/components/ui/Mapa';
-import { fetchAll, fetchCurrent } from './lib/data-fetch';
+import { fetchAll, fetchCurrent, fetchTwelve } from './lib/data-fetch';
 import { VesselData } from './definitions/vesselData';
 import {
   countVesselTypes,
@@ -35,6 +35,8 @@ export default function Home() {
       loadAllData();
     } else if (newSelection === 'currentData') {
       loadCurrentData();
+    } else if (newSelection === 'twelveData') {
+      loadCurrent12();
     }
   };
 
@@ -44,6 +46,8 @@ export default function Home() {
       loadAllData();
     } else if (selectedOption === 'currentData') {
       loadCurrentData();
+    } else if (selectedOption === 'twelveData') {
+      loadCurrent12();
     }
   };
 
@@ -51,6 +55,18 @@ export default function Home() {
     setLoading(true);
     try {
       const data = await fetchCurrent();
+      setSentences(data);
+      setVesselTypeCounts(countVesselTypes(data));
+      updateTimestamp();
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    }
+    setLoading(false);
+  }
+  async function loadCurrent12() {
+    setLoading(true);
+    try {
+      const data = await fetchTwelve();
       setSentences(data);
       setVesselTypeCounts(countVesselTypes(data));
       updateTimestamp();
@@ -119,8 +135,15 @@ export default function Home() {
             <div>
               <Dropup
                 options={[
-                  { value: 'allData', label: 'All vessels from last 12h' },
-                  { value: 'currentData', label: 'Current vessels in range' },
+                  { value: 'allData', label: 'All vessels from last 24h' },
+                  {
+                    value: 'currentData',
+                    label: 'Current vessels in range (last 24h)',
+                  },
+                  {
+                    value: 'twelveData',
+                    label: 'Current vessels in range (last 12h)',
+                  },
                 ]}
                 selectedOption={selectedOption}
                 onChange={(value) => handleSelectChange({ target: { value } })}
