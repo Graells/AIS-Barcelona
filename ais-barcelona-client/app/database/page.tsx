@@ -178,9 +178,9 @@ export default function Database() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center ">
+    <div className="flex flex-col items-center ">
       <div className="mb-4 flex flex-col items-start md:w-[1100px] md:flex-row">
-        <div className="mr-5">
+        <div className="mr-5 md:w-[373px]">
           <Dropdown
             options={[
               { value: 'allData', label: 'All vessels from last 24h' },

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import React from 'react';
 
 const AboutPage: React.FC = () => {
@@ -11,9 +12,12 @@ const AboutPage: React.FC = () => {
           <h2 className="text-xl font-semibold">Introduction</h2>
           <p className="mt-2 text-base">
             In this project, a visualization tool is developed to leverage the
-            data obtained from one of FNB&apos;s AIS antennas. This antenna
-            captures all the maritime traffic data emitted by vessels within the
-            FNB radius.
+            data obtained from one of{' '}
+            <Link className="underline" href="/fnb">
+              FNB&apos;s AIS antennas
+            </Link>
+            . This antenna captures all the maritime traffic data emitted by
+            vessels within the FNB radius.
           </p>
         </section>
 

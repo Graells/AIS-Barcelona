@@ -39,6 +39,7 @@ const GoogleMapsMarker = ({
 
       sentences.forEach((sentence) => {
         const shipImg = document.createElement('img');
+        shipImg.className = 'ship-icon';
         if (sentence.ship_type) {
           const shipImgSrc = getShipImageUrl(sentence.ship_type);
           shipImg.src = shipImgSrc;

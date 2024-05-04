@@ -27,15 +27,17 @@
   
 
   .name-tag {
-    background-color: #4285F4;
-    border-radius: 8px;
-    color: #FFFFFF;
+    background-color: #E5E3DF;
+    border: 2px solid black;
+    border-radius: 4px;
+    color: black;
     font-size: 10px;
-    padding: 8px 12px;
+    font-weight: bold;
+    padding: 4px 6px;
     position: relative;
   }
   
-  .name-tag::after {
+  .name-tag::before, .name-tag::after {
     content: "";
     position: absolute;
     left: 50%;
@@ -43,10 +45,21 @@
     transform: translate(-50%, 0);
     width: 0;
     height: 0;
+    border-left: 11px solid transparent;
+    border-right: 11px solid transparent;
+  }
+  
+  .name-tag::before {
+    border-top: 11px solid black; 
+  }
+  
+  .name-tag::after {
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
-    border-top: 8px solid #4285F4;
+    border-top: 8px solid #E5E3DF;
+    /* margin-top: 2px;  */
   }
+  
 
   .dot {
     position: absolute;
@@ -65,9 +78,8 @@
 }
 
 #legend::-webkit-scrollbar-thumb {
-  background-color: black; 
+  background-color: #E5E3DF; 
   border-radius: 10px; 
- 
 }
 
 #legend::-webkit-scrollbar-track {
@@ -75,7 +87,14 @@
 }
 
 #legend {
-  scrollbar-color: black #8AC0FF; 
+  scrollbar-color: black #E5E3DF; 
   scrollbar-width: thin; 
+}
+#legend:hover {
+  scrollbar-color: rgb(81, 80, 80) #E5E3DF; 
+}
+
+.ship-icon {
+  width: 50px;
 }
 

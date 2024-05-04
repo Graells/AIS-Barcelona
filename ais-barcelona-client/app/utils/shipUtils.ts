@@ -43,11 +43,11 @@ const shipTypeToImagePath: { [key: string]: string } = {
   Passenger: '/passenger.png',
   Cargo: '/cargo.png',
   Tanker: '/tanker.png',
-  Other: '/ship.png',
+  Other: '/other.png',
 };
 
 export const getImagePathFromShipTypeName = (shipTypeName: string): string => {
-  return shipTypeToImagePath[shipTypeName] || '/ship.png';
+  return shipTypeToImagePath[shipTypeName] || '/other.png';
 };
 
 export const getShipImageUrl = (shipType: number) => {
@@ -128,7 +128,7 @@ export const getShipImageUrl = (shipType: number) => {
     case 89:
       return '/tanker.png';
     default:
-      return '/ship.png';
+      return '/other.png';
   }
 };
 

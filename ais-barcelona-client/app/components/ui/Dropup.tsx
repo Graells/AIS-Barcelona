@@ -38,9 +38,9 @@ const Dropup: React.FC<DropdownProps> = ({
   }, []);
 
   return (
-    <div className="relative mt-1" ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef}>
       <button
-        className={`mt-0.5 w-full rounded-md border-2 border-black px-2 py-1 text-left shadow-sm focus:outline-none dark:border-white ${disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
+        className={` w-full rounded-md border-2 border-black px-2 py-1 text-left shadow-sm focus:outline-none dark:border-white ${disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-slate-200 dark:hover:bg-slate-600'}`}
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
       >
@@ -48,7 +48,7 @@ const Dropup: React.FC<DropdownProps> = ({
         <span className="float-right ml-2">{isOpen ? '⏶' : '⏵'} </span>
       </button>
       {isOpen && (
-        <ul className="absolute bottom-full z-10 w-full overflow-auto rounded-md border-2 border-black bg-white shadow-lg dark:border-white dark:bg-black">
+        <ul className="absolute bottom-full z-10 w-full overflow-auto rounded-md border-2 border-black bg-white text-left shadow-lg dark:border-white dark:bg-black">
           {options.map((option, index) => (
             <li
               key={option.value}
