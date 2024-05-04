@@ -152,7 +152,8 @@ export default function Home() {
                   </div>
                 </div>
                 <p>
-                  Updates every 90 seconds to 2 minuts(click refresh button).
+                  Updates every 90 seconds to 2 minuts(click the refresh
+                  button).
                 </p>
                 <p className="font-bold  ">
                   Data collected over the last 24 hours, covering a range of
@@ -178,16 +179,16 @@ export default function Home() {
       <div className="hidden">
         <div
           id="legend"
-          className="mr-1 mt-4 h-[200px] w-[140px] overflow-y-auto rounded-md border border-black bg-[#E5E3DF] p-1 dark:border-white md:my-0 md:h-[500px] md:w-[160px] "
+          className="mr-1 mt-4 h-[200px] w-[140px] overflow-y-auto rounded-l-md border border-black bg-white p-2 dark:border-white md:my-0 md:mr-2.5 md:h-[500px] md:w-[180px] "
         >
-          <h2 className="p-1 text-center text-xs">
+          <h2 className=" text-center text-xs">
             Legend. Type of vessels currently monitored:
           </h2>
           <ul>
             {sortedShipTypes.map((type: string) => (
               <li
                 key={type}
-                className="mb-1 flex flex-row items-center justify-between  rounded-md border border-black py-0.5 pl-1 pr-0.5 text-xs  dark:border-white"
+                className="mt-1 flex flex-row items-center justify-between  rounded-md border border-black py-0.5 pl-1 pr-0.5 text-xs  dark:border-white"
               >
                 {`${type}: ${vesselTypeCounts[type as keyof typeof vesselTypeCounts] || 0}`}
                 <Image

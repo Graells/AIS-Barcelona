@@ -179,7 +179,7 @@ export default function Database() {
 
   return (
     <div className="flex flex-col items-center ">
-      <div className="mb-4 flex flex-col items-start md:w-[1100px] md:flex-row">
+      <div className="mb-4 flex flex-col justify-center md:w-[1100px] md:flex-row">
         <div className="mr-5 md:w-[373px]">
           <Dropdown
             options={[
@@ -227,7 +227,7 @@ export default function Database() {
           </button>
         </div>
       </div>
-      <div className="mx-auto flex flex-wrap justify-center gap-1">
+      <div className="mx-auto mb-1 flex flex-wrap justify-center gap-1">
         {filteredVessels.length > 0
           ? filteredVessels.map((vessel) => (
               <div
@@ -245,7 +245,7 @@ export default function Database() {
                 {vessel.speed !== undefined && (
                   <p>Speed: {vessel.speed} knots</p>
                 )}
-                <p>Time in Port(last 12h): {timeInPort(vessel.positions)}</p>
+                <p>Time in Port: {timeInPort(vessel.positions)}</p>
                 <p>
                   Latitude: {vessel.lat} Longitude: {vessel.lon}
                 </p>

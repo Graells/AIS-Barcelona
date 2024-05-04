@@ -6,7 +6,7 @@ const CreateInfoWindow = (
 ): google.maps.InfoWindow => {
   const shipTypeName = getShipType(vessel.ship_type);
   const contentString = `
-  <div style="padding: 8px; font-family: sans-serif; color: black;">
+  <div style="font-family: sans-serif; color: black; ">
     <h2 style="font-size: 1.25rem; font-weight: 700;">${vessel.name}</h2>
     <p style="margin: 4px 0;"><strong>MMSI:</strong> ${vessel.mmsi}</p>
     <p style="margin: 4px 0;"><strong>Destination:</strong> ${vessel.destination || 'N/A'}</p>
@@ -14,7 +14,9 @@ const CreateInfoWindow = (
     <p style="margin: 4px 0;"><strong>Latest reported Speed:</strong> ${vessel.speed ? vessel.speed + ' knots' : 'N/A'}</p>
     <p style="margin: 4px 0;"><strong>Ship Type:</strong> ${shipTypeName || 'N/A'}</p>
     <p style="margin: 4px 0;"><strong>Last Update:</strong> ${formatTimestamp(vessel.lastUpdateTime)}</p>
-    <button id="trackButton" style="background-color: #2563eb; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">Track</button>
+    <div style="display:flex; justify-content: center;">
+      <button id="trackButton" style="margin-top: 6px; background-color: rgb(187 247 208); color: black; font-weight: 600; font-size: 1rem; border-style: solid; padding: 8px 16px; border-color: rgb(0 0 0); border-width: 2px; border-radius: 4px; cursor: pointer;">Track</button>
+    </div>
   </div>
 `;
 
