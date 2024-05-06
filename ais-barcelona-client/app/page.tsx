@@ -179,7 +179,7 @@ export default function Home() {
       <div className="hidden">
         <div
           id="legend"
-          className="mr-1 mt-4 h-[200px] w-[140px] overflow-y-auto rounded-l-md border border-black bg-white p-2 dark:border-white md:my-0 md:mr-2.5 md:h-[500px] md:w-[180px] "
+          className="mr-1 mt-4 h-[200px] w-[140px] overflow-y-auto rounded-l-md border border-black bg-white p-2 pr-1.5 text-black dark:border-white dark:bg-black dark:text-white  md:my-0 md:mr-2.5 md:h-[500px] md:w-[180px] "
         >
           <h2 className=" text-center text-xs">
             Legend. Type of vessels currently monitored:
@@ -188,7 +188,7 @@ export default function Home() {
             {sortedShipTypes.map((type: string) => (
               <li
                 key={type}
-                className="mt-1 flex flex-row items-center justify-between  rounded-md border border-black py-0.5 pl-1 pr-0.5 text-xs  dark:border-white"
+                className="mt-1 flex flex-row items-center justify-between  rounded-md border border-black py-0.5 pl-1 pr-0.5 text-xs dark:border-white"
               >
                 {`${type}: ${vesselTypeCounts[type as keyof typeof vesselTypeCounts] || 0}`}
                 <Image
