@@ -56,7 +56,7 @@ def vessel_data_to_dict(vessel_data):
             "callsign": vessel_data.callsign,
             "speed": vessel_data.speed,
             "ship_type": vessel_data.ship_type,
-            "positions": [position_to_dict(pos) for pos in vessel_data.positions.values()]
+            # "positions": [position_to_dict(pos) for pos in vessel_data.positions.values()]
         }.items() if value is not None
     }
 
@@ -64,36 +64,34 @@ def vessel_data_to_dict(vessel_data):
 def insert_or_update_vessel_data(vessel_data):
     conn = sqlite3.connect('decoded_data.db')
     cursor = conn.cursor()
-    
-    cursor.execute('SELECT data FROM decoded_data WHERE mmsi = ?', (vessel_data.mmsi,))
-    record = cursor.fetchone()
-    
-    if record:
-        existing_data_json = record[0]
-        existing_data_dict = json.loads(existing_data_json)
-        
-        existing_positions = existing_data_dict.get("positions", [])
-        
-        existing_positions_dict = OrderedDict((pos['timestamp'], pos) for pos in existing_positions)
-        
-        new_positions = [position_to_dict(pos) for pos in vessel_data.positions.values()]
-        
-        existing_positions_dict.update((pos['timestamp'], pos) for pos in new_positions)
-        
-        updated_positions = list(existing_positions_dict.values())
-        
-        existing_data_dict.update(vessel_data_to_dict(vessel_data))
-        existing_data_dict['positions'] = updated_positions
-        
-        updated_data_json = json.dumps(existing_data_dict)
-        
-        cursor.execute('UPDATE decoded_data SET data = ? WHERE mmsi = ?', (updated_data_json, vessel_data.mmsi))
-    else:
-        new_data_json = json.dumps(vessel_data_to_dict(vessel_data))
-        cursor.execute('INSERT INTO decoded_data (mmsi, data) VALUES (?, ?)', (vessel_data.mmsi, new_data_json))
-    
+
+    cursor.execute('''
+        INSERT INTO vessels (mmsi, name, lat, lon, lastUpdateTime, destination, callsign, speed, ship_type)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(mmsi) DO UPDATE SET
+            name = CASE WHEN excluded.name NOT IN ('', 'unknown', NULL) THEN excluded.name ELSE name END,
+            lat = excluded.lat,
+            lon = excluded.lon,
+            lastUpdateTime = excluded.lastUpdateTime,
+            destination = excluded.destination,
+            callsign = CASE WHEN excluded.callsign NOT IN ('', 'unknown', NULL) THEN excluded.callsign ELSE callsign END,
+            speed = excluded.speed,
+            ship_type = CASE WHEN excluded.ship_type NOT IN ('', 'unknown', NULL) THEN excluded.ship_type ELSE ship_type END
+    ''', (vessel_data.mmsi, vessel_data.name, vessel_data.lat, vessel_data.lon, vessel_data.lastUpdateTime, vessel_data.destination, vessel_data.callsign, vessel_data.speed, vessel_data.ship_type))
+
+    if vessel_data.positions:
+        for position in vessel_data.positions:
+            cursor.execute('''
+                INSERT INTO positions (mmsi, timestamp, lat, lon)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT DO NOTHING
+            ''', (vessel_data.mmsi, *position)) 
+
+
     conn.commit()
     conn.close()
+
+from datetime import datetime
 
 def parse_date(timestamp):
     try:
@@ -103,35 +101,25 @@ def parse_date(timestamp):
             return datetime.strptime(timestamp.split(':')[1], '%Y%m%d%H%M%S')
         except ValueError:
             return None
-        
+
 def cleanup_old_data():
     conn = sqlite3.connect('decoded_data.db')
     cursor = conn.cursor()
-    twelve_hours_ago = datetime.now() - timedelta(hours=24)
-    
-    cursor.execute('SELECT id, data FROM decoded_data')
-    records = cursor.fetchall()
+    twenty_four_hours_ago = (datetime.now() - timedelta(hours=24)).strftime('%Y%m%d%H%M%S')
 
-    for record in records:
-        vessel_data = json.loads(record[1])
-        
-        new_positions = [
-            pos for pos in vessel_data.get('positions', [])
-            if parse_date(pos['timestamp']) and parse_date(pos['timestamp']) >= twelve_hours_ago
-        ]
+    cursor.execute('''
+        DELETE FROM vessels
+        WHERE lastUpdateTime < ?
+    ''', (twenty_four_hours_ago,))
 
-        last_update_time = vessel_data.get('lastUpdateTime')
-        parsed_last_update_time = parse_date(last_update_time) if last_update_time else None
-
-        if not new_positions or (parsed_last_update_time and parsed_last_update_time < twelve_hours_ago):
-            cursor.execute('DELETE FROM decoded_data WHERE id = ?', (record[0],))
-        else:
-            if new_positions != vessel_data['positions']:
-                vessel_data['positions'] = new_positions
-                cursor.execute('UPDATE decoded_data SET data = ? WHERE id = ?', (json.dumps(vessel_data), record[0]))
+    cursor.execute('''
+        DELETE FROM positions
+        WHERE timestamp < ?
+    ''', (twenty_four_hours_ago,))
 
     conn.commit()
     conn.close()
+
 
 
 class TagsProcessingService:

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Mapa from '@/app/components/ui/Mapa';
-import { fetchAll, fetchCurrent, fetchTwelve } from './lib/data-fetch';
+import { fetchAll, fetchCurrentVessels } from './lib/data-fetch';
 import { VesselData } from './definitions/vesselData';
 import {
   countVesselTypes,
@@ -12,19 +12,21 @@ import {
 import Image from 'next/image';
 import Dropup from './components/ui/Dropup';
 import Link from 'next/link';
-import FnbPage from './fnb/page';
+import { useSearchParams } from 'next/navigation';
 
 export default function Home() {
   const [sentences, setSentences] = useState<VesselData[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState('');
   const [vesselTypeCounts, setVesselTypeCounts] = useState({});
-  const [selectedOption, setSelectedOption] = useState('currentData');
+  const [selectedOption, setSelectedOption] = useState('currentVessels');
+  const searchParams = useSearchParams();
+  const mmsi: any = searchParams.get('mmsi');
 
   useEffect(() => {
     loadCurrentData();
     updateTimestamp();
-  }, []);
+  }, [searchParams]);
 
   const handleSelectChange = (event: {
     target: { value: React.SetStateAction<string> };
@@ -33,30 +35,26 @@ export default function Home() {
     setSelectedOption(newSelection);
     setLoading(true);
 
-    if (newSelection === 'allData') {
+    if (newSelection === 'allVessels') {
       loadAllData();
-    } else if (newSelection === 'currentData') {
+    } else if (newSelection === 'currentVessels') {
       loadCurrentData();
-    } else if (newSelection === 'twelveData') {
-      loadCurrent12();
     }
   };
 
   const handleRefreshClick = () => {
     setLoading(true);
-    if (selectedOption === 'allData') {
+    if (selectedOption === 'allVessels') {
       loadAllData();
-    } else if (selectedOption === 'currentData') {
+    } else if (selectedOption === 'currentVessels') {
       loadCurrentData();
-    } else if (selectedOption === 'twelveData') {
-      loadCurrent12();
     }
   };
 
   async function loadCurrentData() {
     setLoading(true);
     try {
-      const data = await fetchCurrent();
+      const data = await fetchCurrentVessels();
       setSentences(data);
       setVesselTypeCounts(countVesselTypes(data));
       updateTimestamp();
@@ -65,18 +63,7 @@ export default function Home() {
     }
     setLoading(false);
   }
-  async function loadCurrent12() {
-    setLoading(true);
-    try {
-      const data = await fetchTwelve();
-      setSentences(data);
-      setVesselTypeCounts(countVesselTypes(data));
-      updateTimestamp();
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-    }
-    setLoading(false);
-  }
+
   async function loadAllData() {
     setLoading(true);
     try {
@@ -104,7 +91,7 @@ export default function Home() {
   return (
     <main className="">
       <div className="flex flex-col md:items-center ">
-        <Mapa sentences={sentences} />
+        <Mapa sentences={sentences} mmsi={mmsi} />
         <div className="mx-0.5 flex flex-col md:w-[1100px]">
           <button
             className="mt-1 rounded-md border-2 border-black bg-green-200 px-4 py-2 font-bold text-black transition duration-200 ease-in-out hover:bg-green-300 dark:border-white dark:hover:bg-green-300"
@@ -131,16 +118,12 @@ export default function Home() {
                     <Dropup
                       options={[
                         {
-                          value: 'allData',
-                          label: 'All vessels from last 24h',
+                          value: 'allVessels',
+                          label: 'All vessels detected (last 24h)',
                         },
                         {
-                          value: 'currentData',
-                          label: 'Current vessels in range (last 24h)',
-                        },
-                        {
-                          value: 'twelveData',
-                          label: 'Current vessels in range (last 12h)',
+                          value: 'currentVessels',
+                          label: 'Current vessels in range',
                         },
                       ]}
                       selectedOption={selectedOption}

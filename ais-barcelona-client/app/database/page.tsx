@@ -3,8 +3,13 @@
 import { useState, useEffect, ChangeEvent, KeyboardEvent } from 'react';
 import { VesselData } from '../definitions/vesselData';
 import { getShipType } from '../utils/shipUtils';
-import { fetchAll, fetchCurrent, fetchTwelve } from '../lib/data-fetch';
+import {
+  fetchAll,
+  fetchCurrentVessels,
+  fetchVesselPositions,
+} from '../lib/data-fetch';
 import Dropdown from '../components/ui/Dropdown';
+import { useRouter } from 'next/navigation';
 
 const portPolygon = [
   [41.31499060828476, 2.1704329763480104],
@@ -21,23 +26,20 @@ export default function Database() {
   const [vessels, setVessels] = useState<VesselData[]>([]);
   const [filteredVessels, setFilteredVessels] = useState<VesselData[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedOption, setSelectedOption] = useState<any>('allData');
+  const [selectedOption, setSelectedOption] = useState<any>('currentVessels');
   const [loading, setLoading] = useState(false);
+  const [timeInPortResults, setTimeInPortResults] = useState<{
+    [mmsi: number]: string;
+  }>({});
+  const router = useRouter();
+
+  useEffect(() => {
+    loadData(selectedOption);
+  }, [selectedOption]);
 
   const loadData = (value: string) => {
     setLoading(true);
-
-    let fetchData;
-    if (value === 'allData') {
-      fetchData = fetchAll;
-    } else if (value === 'currentData') {
-      fetchData = fetchCurrent;
-    } else if (value === 'twelveData') {
-      fetchData = fetchTwelve;
-    } else {
-      fetchData = fetchAll;
-    }
-
+    let fetchData = value === 'allVessels' ? fetchAll : fetchCurrentVessels;
     fetchData()
       .then((data) => {
         setVessels(data);
@@ -48,20 +50,16 @@ export default function Database() {
         setLoading(false);
       });
   };
-
-  useEffect(() => {
-    loadData(selectedOption);
-  }, [selectedOption]);
-
   const handleSelectChange = (event: { target: { value: string } }) => {
     const newSelection = event.target.value;
+    setTimeInPortResults({});
     setSelectedOption(newSelection);
   };
 
   const handleSearch = () => {
     if (!searchQuery.trim()) {
-      // setVessels(vessels);
       setFilteredVessels([]);
+      setTimeInPortResults({});
     } else {
       setLoading(true);
       const filter = vessels.filter(
@@ -95,6 +93,7 @@ export default function Database() {
   const handleResetSearch = () => {
     setSearchQuery('');
     setFilteredVessels([]);
+    setTimeInPortResults({});
   };
 
   const formatTimestamp = (timestamp: string | undefined): string => {
@@ -103,7 +102,7 @@ export default function Database() {
     return formatted;
   };
 
-  const isPointInPolygon = (lat: never, lon: never) => {
+  const isPointInPolygon = (lat: number, lon: number) => {
     let inside = false;
     const x = lat,
       y = lon;
@@ -124,19 +123,21 @@ export default function Database() {
     return inside;
   };
 
-  const parseTimestamp = (timestamp: string): Date => {
-    if (!timestamp) return new Date(); // fallback to current date/time if undefined
-    // Extract parts from the timestamp
-    const year = parseInt(timestamp.substring(0, 4), 10);
-    const month = parseInt(timestamp.substring(4, 6), 10) - 1; // Month is 0-indexed in JavaScript Date
-    const day = parseInt(timestamp.substring(6, 8), 10);
-    const hour = parseInt(timestamp.substring(8, 10), 10);
-    const minute = parseInt(timestamp.substring(10, 12), 10);
-    const second = parseInt(timestamp.substring(12, 14), 10);
-    // Create a new Date object with extracted parts
-    return new Date(year, month, day, hour, minute, second);
+  const parseTimestamp = (timestamp: string) => {
+    return new Date(
+      parseInt(timestamp.substring(0, 4), 10), // year
+      parseInt(timestamp.substring(4, 6), 10) - 1, // month (0-based)
+      parseInt(timestamp.substring(6, 8), 10), // day
+      parseInt(timestamp.substring(8, 10), 10), // hour
+      parseInt(timestamp.substring(10, 12), 10), // minute
+      parseInt(timestamp.substring(12, 14), 10), // second
+    );
   };
+
   const formatDuration = (totalMinutes: number) => {
+    if (totalMinutes === 0) {
+      return 'Not within port';
+    }
     const minutesInADay = 1440; // 60 minutes * 24 hours
     const minutesInAnHour = 60;
 
@@ -147,21 +148,28 @@ export default function Database() {
     return `${days} days, ${hours} hours, ${minutes} minutes`;
   };
 
-  const timeInPort: any = (positions: any[]) => {
+  const timeInPort = (
+    positions: { lat: number; lon: number; timestamp: string }[],
+  ) => {
     let totalTime: any = 0;
     let inPort: boolean = false;
     let entryTime: any = null;
+    // const uniquePositions = positions.filter(
+    //   (value, index, self) =>
+    //     index ===
+    //     self.findIndex((t) => t.lat === value.lat && t.lon === value.lon),
+    // );
 
     positions.forEach(
-      (position: { lat: undefined; lon: undefined; timestamp: string }) => {
+      (position: { lat: number; lon: number; timestamp: string }) => {
         if (position.lat !== undefined && position.lon !== undefined) {
           const isInPort: any = isPointInPolygon(position.lat, position.lon);
-          if (isInPort && !inPort) {
+          if (isInPort && inPort === false) {
             entryTime = parseTimestamp(position.timestamp);
             inPort = true;
           } else if (!isInPort && inPort) {
             const exitTime: any = parseTimestamp(position.timestamp);
-            totalTime += exitTime - entryTime; // Time in milliseconds
+            totalTime += exitTime.getTime() - entryTime.getTime();
             inPort = false;
           }
         }
@@ -169,12 +177,26 @@ export default function Database() {
     );
 
     if (inPort) {
-      const now: any = new Date();
-      totalTime += now - entryTime; // If still in port
+      const lastPosition = positions[positions.length - 1];
+      const now = parseTimestamp(lastPosition.timestamp);
+      totalTime += new Date().getTime() - entryTime.getTime(); // If still in port
     }
-
+    console.log(`Total time in port in milliseconds: ${totalTime}`);
     const totalMinutes = totalTime / 1000 / 60;
+    console.log(`Total time in port in minutes: ${totalMinutes}`);
     return formatDuration(totalMinutes);
+  };
+  const calculateTimeInPort = async (mmsi: number) => {
+    setLoading(true);
+    try {
+      const positions = await fetchVesselPositions(mmsi);
+      const duration = timeInPort(positions);
+      setTimeInPortResults((prev) => ({ ...prev, [mmsi]: duration }));
+      setLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch positions:', error);
+      setLoading(false);
+    }
   };
 
   return (
@@ -183,14 +205,10 @@ export default function Database() {
         <div className="mr-5 md:w-[373px]">
           <Dropdown
             options={[
-              { value: 'allData', label: 'All vessels from last 24h' },
+              { value: 'allVessels', label: 'All vessels from last 24h' },
               {
-                value: 'currentData',
+                value: 'currentVessels',
                 label: 'Current vessels in range (last 24h)',
-              },
-              {
-                value: 'twelveData',
-                label: 'Current vessels in range (last 12h)',
               },
             ]}
             selectedOption={selectedOption}
@@ -223,7 +241,7 @@ export default function Database() {
             disabled={loading}
             className="ml-1 rounded border-2 border-black bg-red-200 px-2 py-1 font-bold hover:bg-red-300 dark:border-white  dark:text-black"
           >
-            Reset Search
+            Reset
           </button>
         </div>
       </div>
@@ -245,7 +263,20 @@ export default function Database() {
                 {vessel.speed !== undefined && (
                   <p>Speed: {vessel.speed} knots</p>
                 )}
-                <p>Time in Port: {timeInPort(vessel.positions)}</p>
+                <div className="flex flex-row items-center">
+                  <p>Time in port:</p>
+                  {timeInPortResults[vessel.mmsi] ? (
+                    <p className="ml-2">{timeInPortResults[vessel.mmsi]}</p>
+                  ) : (
+                    <button
+                      onClick={() => calculateTimeInPort(vessel.mmsi ?? 0)}
+                      disabled={loading || vessel.mmsi === null}
+                      className="ml-2 rounded border-2 border-black bg-sky-100 px-1 font-bold hover:bg-sky-200 dark:border-white  dark:text-black"
+                    >
+                      Calculate
+                    </button>
+                  )}
+                </div>
                 <p>
                   Latitude: {vessel.lat} Longitude: {vessel.lon}
                 </p>
@@ -260,7 +291,10 @@ export default function Database() {
                 key={vessel.mmsi}
                 className=" w-full max-w-md border border-black p-2 dark:border-white"
               >
-                <h2 className="text-lg font-bold">
+                <h2
+                  className="cursor-pointer text-lg font-bold underline hover:text-blue-400"
+                  onClick={() => router.push(`/?mmsi=${vessel.mmsi}`)}
+                >
                   {vessel.name} (MMSI: {vessel.mmsi})
                 </h2>
                 {vessel.ship_type !== undefined && (
@@ -271,7 +305,20 @@ export default function Database() {
                 {vessel.speed !== undefined && (
                   <p>Speed: {vessel.speed} knots</p>
                 )}
-                <p>Time in Port(last 12h): {timeInPort(vessel.positions)}</p>
+                <div className="flex flex-row items-center">
+                  <p>Time in port:</p>
+                  {timeInPortResults[vessel.mmsi] ? (
+                    <p className="ml-2">{timeInPortResults[vessel.mmsi]}</p>
+                  ) : (
+                    <button
+                      onClick={() => calculateTimeInPort(vessel.mmsi ?? 0)}
+                      disabled={loading || vessel.mmsi === null}
+                      className="ml-2 rounded border-2 border-black bg-sky-100 px-1 font-bold hover:bg-sky-200 dark:border-white  dark:text-black"
+                    >
+                      Calculate
+                    </button>
+                  )}
+                </div>
                 <p>
                   Latitude: {vessel.lat} Longitude: {vessel.lon}
                 </p>

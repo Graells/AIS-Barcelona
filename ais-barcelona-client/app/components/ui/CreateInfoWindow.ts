@@ -1,3 +1,4 @@
+import { fetchVesselPositions } from '@/app/lib/data-fetch';
 import { getShipType } from '@/app/utils/shipUtils';
 
 const CreateInfoWindow = (
@@ -28,10 +29,14 @@ const CreateInfoWindow = (
   google.maps.event.addListener(infoWindow, 'domready', () => {
     const trackButton = document.getElementById('trackButton');
     if (trackButton) {
-      trackButton.addEventListener('click', () => {
+      trackButton.addEventListener('click', async () => {
+        console.time('Tracking Operation Time'); // Start timing
         clearExistingMarkers();
         infoWindow.close();
-        drawTrackLine(vessel.positions, map);
+        const positions = await fetchVesselPositions(vessel.mmsi);
+        console.log('Positions:', positions);
+        drawTrackLine(positions, map);
+        console.timeEnd('Tracking Operation Time'); // End timing and log the duration
       });
     }
   });
@@ -62,13 +67,12 @@ const drawTrackLine = (
   positions: Array<{ lat: number; lon: number; timestamp: string }>,
   map: google.maps.Map,
 ) => {
-  const uniquePositions = positions.filter(
-    (value, index, self) =>
-      index ===
-      self.findIndex((t) => t.lat === value.lat && t.lon === value.lon),
-  );
-
-  const path = uniquePositions.map((position) => ({
+  // const uniquePositions = positions.filter(
+  //   (value, index, self) =>
+  //     index ===
+  //     self.findIndex((t) => t.lat === value.lat && t.lon === value.lon),
+  // );
+  const path = positions.map((position) => ({
     lat: position.lat,
     lng: position.lon,
   }));
@@ -95,8 +99,21 @@ const drawTrackLine = (
       parseInt(timestamp.substring(12, 14), 10), // second
     );
   };
+  const format2Timestamp = (timestamp: string): string => {
+    const date = new Date(timestamp);
+    const formatted = date.toLocaleString('en-UK', {
+      day: '2-digit',
+      month: '2-digit', // Numeric, 2-digit
+      year: 'numeric', // Numeric, 4-digit
+      hour: '2-digit', // Numeric, 2-digit, 24-hour clock
+      minute: '2-digit', // Numeric, 2-digit
+      second: '2-digit', // Numeric, 2-digit
+      hour12: false, // Use 24-hour clock
+    });
+    return formatted;
+  };
 
-  uniquePositions.forEach((position) => {
+  positions.forEach((position) => {
     const positionTime = parseTimestamp(position.timestamp);
     if (positionTime.getTime() - lastAddedTime.getTime() >= 300000) {
       const tag = document.createElement('div');

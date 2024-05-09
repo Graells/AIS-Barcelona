@@ -4,13 +4,16 @@ import CreateInfoWindow from './CreateInfoWindow';
 import { VesselData } from '@/app/definitions/vesselData';
 
 const markers: any[] = [];
+const markersByMMSI: any = {};
 
 const GoogleMapsMarker = ({
   map,
   sentences,
+  mmsi,
 }: {
   map: google.maps.Map;
   sentences: VesselData[];
+  mmsi: number;
 }) => {
   let openInfoWindow: any = null;
 
@@ -21,6 +24,7 @@ const GoogleMapsMarker = ({
 
   markers.forEach((marker) => marker.setMap(null));
   markers.length = 0; // Reset the markers array
+  markersByMMSI.length = 0;
 
   google.maps
     .importLibrary('marker')
@@ -43,6 +47,8 @@ const GoogleMapsMarker = ({
         if (sentence.ship_type) {
           const shipImgSrc = getShipImageUrl(sentence.ship_type);
           shipImg.src = shipImgSrc;
+        } else {
+          shipImg.src = '/other.png';
         }
         if (sentence.lat && sentence.lon) {
           let collisionBehavior = google.maps.CollisionBehavior.REQUIRED;
@@ -51,9 +57,15 @@ const GoogleMapsMarker = ({
             position: { lat: sentence.lat, lng: sentence.lon },
             title: sentence.name,
             content: shipImg,
-            collisionBehavior,
+            // collisionBehavior,
           });
 
+          if (!markersByMMSI[sentence.mmsi]) {
+            markersByMMSI[sentence.mmsi] = {
+              lat: sentence.lat,
+              lng: sentence.lon,
+            };
+          }
           markers.push(marker);
 
           if (sentence.name && sentence.name != 'Unknown') {
@@ -123,6 +135,16 @@ const GoogleMapsMarker = ({
             });
             openInfoWindow = infowindow;
           });
+          if (mmsi) {
+            const targetMarkerInfo = markersByMMSI[mmsi];
+            if (targetMarkerInfo) {
+              map.setCenter({
+                lat: targetMarkerInfo.lat,
+                lng: targetMarkerInfo.lng,
+              });
+              map.setZoom(15);
+            }
+          }
         }
       });
       google.maps.event.addListener(map, 'click', () => {

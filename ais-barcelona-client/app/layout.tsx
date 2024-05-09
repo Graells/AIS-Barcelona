@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProviders } from './components/theme/theme-provider';
 import NavBar from './components/ui/NavBar';
 import { robotoMono } from './components/theme/fonts';
+import { Suspense } from 'react';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,8 +24,7 @@ export default function RootLayout({
       <body className={robotoMono.className}>
         <ThemeProviders>
           <NavBar />
-
-          {children}
+          <Suspense>{children}</Suspense>
         </ThemeProviders>
       </body>
     </html>

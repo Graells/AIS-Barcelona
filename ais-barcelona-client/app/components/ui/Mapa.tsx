@@ -6,7 +6,13 @@ import GoogleMapsMarker from '@/app/components/ui/GoogleMapsMarker';
 import GoogleMapsStyle from '@/app/components/theme/GoogleMapsStyle';
 import { VesselData } from '@/app/definitions/vesselData';
 
-const Mapa = ({ sentences }: { sentences: VesselData[] }) => {
+const Mapa = ({
+  sentences,
+  mmsi,
+}: {
+  sentences: VesselData[];
+  mmsi: number;
+}) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
 
@@ -54,7 +60,11 @@ const Mapa = ({ sentences }: { sentences: VesselData[] }) => {
       />
       {mapInstance && (
         <div>
-          <GoogleMapsMarker map={mapInstance} sentences={sentences} />
+          <GoogleMapsMarker
+            map={mapInstance}
+            sentences={sentences}
+            mmsi={mmsi}
+          />
           {/* <GoogleMapsStyle map={mapInstance} /> */}
         </div>
       )}
