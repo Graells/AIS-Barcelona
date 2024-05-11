@@ -5,8 +5,9 @@ import { ThemeProviders } from './components/theme/theme-provider';
 import NavBar from './components/ui/NavBar';
 import { robotoMono } from './components/theme/fonts';
 import { Suspense } from 'react';
+import Loading from './loading';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'AIS-Barcelona',
@@ -24,7 +25,7 @@ export default function RootLayout({
       <body className={robotoMono.className}>
         <ThemeProviders>
           <NavBar />
-          <Suspense>{children}</Suspense>
+          <Suspense fallback={<Loading />}>{children}</Suspense>
         </ThemeProviders>
       </body>
     </html>

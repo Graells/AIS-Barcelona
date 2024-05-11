@@ -9,6 +9,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 base_path = '/home/pi/Desktop/test_AIS/'
 combined_file_path = '/home/pi/Desktop/test_AIS/combined_last_12_hours.txt'
+flag_file_path = '/home/pi/Desktop/test_AIS/ready_to_transfer.txt'
 
 def cleanup_old_files(base_path, cutoff_time):
     for file_name in os.listdir(base_path):
@@ -36,6 +37,8 @@ def combine_recent_files(base_path, cutoff_time):
                         logging.info("Added file to combined file: {}".format(file_name))
                 except ValueError:
                     logging.warning("Skipping invalid file: {}".format(file_name))
+        with open(flag_file_path, 'w') as flag_file:
+            flag_file.write('Ready for transfer')
 
 while True:
     current_time = datetime.datetime.now()

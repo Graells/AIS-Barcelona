@@ -30,13 +30,12 @@ const CreateInfoWindow = (
     const trackButton = document.getElementById('trackButton');
     if (trackButton) {
       trackButton.addEventListener('click', async () => {
-        console.time('Tracking Operation Time'); // Start timing
-        clearExistingMarkers();
+        // clearExistingMarkers().then(() => {
+        //   google.maps.event.trigger(map, 'resize');
+        // });
         infoWindow.close();
         const positions = await fetchVesselPositions(vessel.mmsi);
-        console.log('Positions:', positions);
         drawTrackLine(positions, map);
-        console.timeEnd('Tracking Operation Time'); // End timing and log the duration
       });
     }
   });
@@ -54,15 +53,16 @@ let currentPolyline: any = null;
 let currentMarkers: any = [];
 
 const clearExistingMarkers = () => {
-  currentMarkers.forEach((marker: any) => marker.setMap(null));
+  currentMarkers.forEach((marker: { setMap: (arg0: null) => any }) =>
+    marker.setMap(null),
+  );
   currentMarkers = [];
   if (currentPolyline) {
     currentPolyline.setMap(null);
-  }
-  if (currentPolyline) {
-    currentPolyline.setMap(null);
+    currentPolyline = null;
   }
 };
+
 const drawTrackLine = (
   positions: Array<{ lat: number; lon: number; timestamp: string }>,
   map: google.maps.Map,
@@ -72,6 +72,8 @@ const drawTrackLine = (
   //     index ===
   //     self.findIndex((t) => t.lat === value.lat && t.lon === value.lon),
   // );
+  clearExistingMarkers();
+
   const path = positions.map((position) => ({
     lat: position.lat,
     lng: position.lon,

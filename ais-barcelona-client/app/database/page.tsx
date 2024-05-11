@@ -27,7 +27,7 @@ export default function Database() {
   const [filteredVessels, setFilteredVessels] = useState<VesselData[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedOption, setSelectedOption] = useState<any>('currentVessels');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [timeInPortResults, setTimeInPortResults] = useState<{
     [mmsi: number]: string;
   }>({});
@@ -252,7 +252,10 @@ export default function Database() {
                 key={vessel.mmsi}
                 className=" w-full max-w-md border border-black p-2 dark:border-white"
               >
-                <h2 className="text-lg font-bold">
+                <h2
+                  className="cursor-pointer text-lg font-bold underline hover:text-sky-500"
+                  onClick={() => router.push(`/?mmsi=${vessel.mmsi}`)}
+                >
                   {vessel.name} (MMSI: {vessel.mmsi})
                 </h2>
                 {vessel.ship_type !== undefined && (
@@ -292,7 +295,7 @@ export default function Database() {
                 className=" w-full max-w-md border border-black p-2 dark:border-white"
               >
                 <h2
-                  className="cursor-pointer text-lg font-bold underline hover:text-blue-400"
+                  className="cursor-pointer text-lg font-bold underline hover:text-sky-500"
                   onClick={() => router.push(`/?mmsi=${vessel.mmsi}`)}
                 >
                   {vessel.name} (MMSI: {vessel.mmsi})

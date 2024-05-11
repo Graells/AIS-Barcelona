@@ -167,19 +167,23 @@ class TagsProcessingService:
         if 'lat' in sentence and 'lon' in sentence:
             new_position = Position(timestamp=sentence['receiver_timestamp'], lat=sentence['lat'], lon=sentence['lon'])
             position_key = (new_position.timestamp, new_position.lat, new_position.lon)
-
             vessel_data.positions[position_key] = new_position
 
-        if 'shipname' in sentence:
+        if 'shipname' in sentence and sentence['shipname'] not in ['', 'unknown', None]:
             vessel_data.name = sentence['shipname']
+
         if 'destination' in sentence:
             vessel_data.destination = sentence['destination']
-        if 'callsign' in sentence:
+
+        if 'callsign' in sentence and sentence['callsign'] not in ['', 'unknown', None]:
             vessel_data.callsign = sentence['callsign']
+
         if 'speed' in sentence:
             vessel_data.speed = sentence['speed']
-        if 'ship_type' in sentence:
+
+        if 'ship_type' in sentence and sentence['ship_type'] not in ['', 'unknown', None]:
             vessel_data.ship_type = sentence['ship_type']
+
 
 
     def log_timing_data(self):
@@ -286,8 +290,8 @@ def main_loop():
         start = time.time()
         cleanup_old_data()
         log_time_taken(start, "Cleanup old data")
-        logging.info("Data processing completed. Waiting 90 seconds.")
-        time.sleep(90)
+        logging.info("Data processing completed. Waiting 60 seconds.")
+        time.sleep(60)
 
 if __name__ == "__main__":
     main_loop()
