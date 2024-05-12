@@ -60,66 +60,61 @@ def vessel_data_to_dict(vessel_data):
         }.items() if value is not None
     }
 
+def get_db_connection():
+    return sqlite3.connect('decoded_data.db')
 
 def insert_or_update_vessel_data(vessel_data):
-    conn = sqlite3.connect('decoded_data.db')
-    cursor = conn.cursor()
-
-    cursor.execute('''
-        INSERT INTO vessels (mmsi, name, lat, lon, lastUpdateTime, destination, callsign, speed, ship_type)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(mmsi) DO UPDATE SET
-            name = CASE WHEN excluded.name NOT IN ('', 'unknown', NULL) THEN excluded.name ELSE name END,
-            lat = excluded.lat,
-            lon = excluded.lon,
-            lastUpdateTime = excluded.lastUpdateTime,
-            destination = excluded.destination,
-            callsign = CASE WHEN excluded.callsign NOT IN ('', 'unknown', NULL) THEN excluded.callsign ELSE callsign END,
-            speed = excluded.speed,
-            ship_type = CASE WHEN excluded.ship_type NOT IN ('', 'unknown', NULL) THEN excluded.ship_type ELSE ship_type END
-    ''', (vessel_data.mmsi, vessel_data.name, vessel_data.lat, vessel_data.lon, vessel_data.lastUpdateTime, vessel_data.destination, vessel_data.callsign, vessel_data.speed, vessel_data.ship_type))
-
-    if vessel_data.positions:
-        for position in vessel_data.positions:
-            cursor.execute('''
-                INSERT INTO positions (mmsi, timestamp, lat, lon)
-                VALUES (?, ?, ?, ?)
-                ON CONFLICT DO NOTHING
-            ''', (vessel_data.mmsi, *position)) 
-
-
-    conn.commit()
-    conn.close()
-
-from datetime import datetime
-
-def parse_date(timestamp):
-    try:
-        return datetime.strptime(timestamp, '%Y%m%d%H%M%S')
-    except ValueError:
+    with get_db_connection() as conn:
         try:
-            return datetime.strptime(timestamp.split(':')[1], '%Y%m%d%H%M%S')
-        except ValueError:
-            return None
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO vessels (mmsi, name, lat, lon, lastUpdateTime, destination, callsign, speed, ship_type)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(mmsi) DO UPDATE SET
+                    name = CASE WHEN excluded.name NOT IN ('', 'unknown', NULL) THEN excluded.name ELSE name END,
+                    lat = excluded.lat,
+                    lon = excluded.lon,
+                    lastUpdateTime = excluded.lastUpdateTime,
+                    destination = excluded.destination,
+                    callsign = CASE WHEN excluded.callsign NOT IN ('', 'unknown', NULL) THEN excluded.callsign ELSE callsign END,
+                    speed = excluded.speed,
+                    ship_type = CASE WHEN excluded.ship_type NOT IN ('', 'unknown', NULL) THEN excluded.ship_type ELSE ship_type END
+            ''', (vessel_data.mmsi, vessel_data.name, vessel_data.lat, vessel_data.lon, vessel_data.lastUpdateTime, vessel_data.destination, vessel_data.callsign, vessel_data.speed, vessel_data.ship_type))
+
+            if vessel_data.positions:
+                for position in vessel_data.positions:
+                    cursor.execute('''
+                        INSERT INTO positions (mmsi, timestamp, lat, lon)
+                        VALUES (?, ?, ?, ?)
+                        ON CONFLICT DO NOTHING
+                    ''', (vessel_data.mmsi, *position)) 
+            conn.commit()
+        except Exception as e:
+            print(f"Error inserting or updating vessel data: {e}")
+            conn.rollback()
+            raise e
 
 def cleanup_old_data():
-    conn = sqlite3.connect('decoded_data.db')
-    cursor = conn.cursor()
-    twenty_four_hours_ago = (datetime.now() - timedelta(hours=24)).strftime('%Y%m%d%H%M%S')
+    with get_db_connection() as conn:
+        try:
+            cursor = conn.cursor()
+            twenty_five_hours_ago = (datetime.now() - timedelta(hours=25)).strftime('%Y%m%d%H%M%S')
 
-    cursor.execute('''
-        DELETE FROM vessels
-        WHERE lastUpdateTime < ?
-    ''', (twenty_four_hours_ago,))
+            cursor.execute('''
+                DELETE FROM vessels
+                WHERE lastUpdateTime < ?
+            ''', (twenty_five_hours_ago,))
 
-    cursor.execute('''
-        DELETE FROM positions
-        WHERE timestamp < ?
-    ''', (twenty_four_hours_ago,))
+            cursor.execute('''
+                DELETE FROM positions
+                WHERE timestamp < ?
+            ''', (twenty_five_hours_ago,))
 
-    conn.commit()
-    conn.close()
-
+            conn.commit()
+        except Exception as e:
+            print(f"Error cleaning up old data: {e}")
+            conn.rollback()
+            raise e
 
 
 class TagsProcessingService:
@@ -154,13 +149,10 @@ class TagsProcessingService:
                 vessel_data.lastUpdateTime = latest_position.timestamp
             insert_or_update_vessel_data(vessel_data)
         self.timing_data['update_positions'].append(time.time() - start_update_positions)
-
         total_time = time.time() - start_time
         self.timing_data['process_sentences'].append(total_time)
-        logger.info(f"Total processing time for sentences: {total_time:.2f} seconds.")
-
+        # logger.info(f"Total processing time for sentences: {total_time:.2f} seconds.")
         self.log_timing_data()
-
         return list(self.vessels.values())
 
     def update_vessel_data_with_sentence(self, vessel_data, sentence):
@@ -168,29 +160,23 @@ class TagsProcessingService:
             new_position = Position(timestamp=sentence['receiver_timestamp'], lat=sentence['lat'], lon=sentence['lon'])
             position_key = (new_position.timestamp, new_position.lat, new_position.lon)
             vessel_data.positions[position_key] = new_position
-
         if 'shipname' in sentence and sentence['shipname'] not in ['', 'unknown', None]:
             vessel_data.name = sentence['shipname']
-
         if 'destination' in sentence:
             vessel_data.destination = sentence['destination']
-
         if 'callsign' in sentence and sentence['callsign'] not in ['', 'unknown', None]:
             vessel_data.callsign = sentence['callsign']
-
         if 'speed' in sentence:
             vessel_data.speed = sentence['speed']
-
         if 'ship_type' in sentence and sentence['ship_type'] not in ['', 'unknown', None]:
             vessel_data.ship_type = sentence['ship_type']
-
 
 
     def log_timing_data(self):
         for key, times in self.timing_data.items():
             if times:
                 average_time = sum(times) / len(times)
-                logger.info(f"Average time for {key}: {average_time:.2f} seconds")
+                # logger.info(f"Average time for {key}: {average_time:.2f} seconds")
 
 def process_data(file_path):
     if not pathlib.Path(file_path).exists():
@@ -243,30 +229,12 @@ def write_to_json(data, output_path):
 
 def process_and_save_data():
     base_path = pathlib.Path(__file__).parent
-    output_path = base_path / 'output' / 'combined_decoded_2448.json'
     combined_whole = base_path / 'input' / 'combined_last_12_hours.txt'
     try:
-        start = time.time()
         processed_data = process_data(combined_whole)
-        log_time_taken(start, "Processing data")
-
-        start = time.time()
         filtered_data = filter_data(processed_data)
-        log_time_taken(start, "Filtering data")
-
-        start = time.time()
         service = TagsProcessingService()
-        vessel_data = service.process_sentences(filtered_data)
-        log_time_taken(start, "Processing sentences")
-
-        # start = time.time()
-        # vessel_data_json = [vessel_data_to_dict(v) for v in vessel_data]
-        # log_time_taken(start, "Converting data to JSON")
-
-        # start = time.time()
-        # write_to_json(vessel_data_json, output_path)
-        # log_time_taken(start, "Writing JSON to file")
-
+        service.process_sentences(filtered_data)
     except Exception as e:
         print(f"An error occurred: {e}")
 
@@ -280,18 +248,43 @@ def run_fetch_script():
         print(f"An error occurred: {e}")
         print(f"STDOUT: {e.stdout}")
         print(f"STDERR: {e.stderr}")
-    
 
 def main_loop():
     while True:
         logging.info("Starting data processing loop.")
+        begin = time.time()
+        start = time.time()
         run_fetch_script()
+        log_time_taken(start, "Run fetch script")
+        start = time.time()
         process_and_save_data()
+        log_time_taken(start, "Process and save data")
         start = time.time()
         cleanup_old_data()
         log_time_taken(start, "Cleanup old data")
-        logging.info("Data processing completed. Waiting 60 seconds.")
-        time.sleep(60)
+        log_time_taken(begin, "Total loop time")
+        logging.info("Data processing completed. Waiting 30 seconds.")
+        time.sleep(30)
 
 if __name__ == "__main__":
     main_loop()
+
+# def main_loop():
+#     while True:
+#         run_fetch_script()
+#         process_and_save_data()
+#         cleanup_old_data()
+#         time.sleep(30)
+
+# if __name__ == "__main__":
+#     main_loop()
+
+
+# def parse_date(timestamp):
+#     try:
+#         return datetime.strptime(timestamp, '%Y%m%d%H%M%S')
+#     except ValueError:
+#         try:
+#             return datetime.strptime(timestamp.split(':')[1], '%Y%m%d%H%M%S')
+#         except ValueError:
+#             return None

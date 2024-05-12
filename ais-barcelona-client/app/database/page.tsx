@@ -205,10 +205,10 @@ export default function Database() {
         <div className="mr-5 md:w-[373px]">
           <Dropdown
             options={[
-              { value: 'allVessels', label: 'All vessels from last 24h' },
+              { value: 'allVessels', label: 'All vessels detected (last 24h)' },
               {
                 value: 'currentVessels',
-                label: 'Current vessels in range (last 24h)',
+                label: 'Current vessels in range',
               },
             ]}
             selectedOption={selectedOption}

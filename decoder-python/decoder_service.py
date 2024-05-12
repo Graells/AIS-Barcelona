@@ -41,7 +41,7 @@ def get_current_vessels():
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        one_hour_ago = (datetime.now() - timedelta(hours=1)).strftime('%Y%m%d%H%M%S')
+        one_hour_ago = (datetime.now() - timedelta(hours=1, minutes=1)).strftime('%Y%m%d%H%M%S')
         cursor.execute('''
             SELECT * FROM vessels
             WHERE lastUpdateTime IS NOT NULL AND lastUpdateTime >= ?
