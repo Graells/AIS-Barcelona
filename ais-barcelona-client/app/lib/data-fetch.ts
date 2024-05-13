@@ -46,6 +46,13 @@ export async function fetchVesselPositions(mmsi: number) {
   const data = await response.json();
   return data;
 }
+export async function fetchByData(start: string, end: string) {
+  const response = await fetch(`${getVesselPositions}/${start}/${end}`, {
+    cache: 'no-store',
+  });
+  const data = await response.json();
+  return data;
+}
 
 export async function fetchLast12hVesselPositions() {
   const response = await fetch(getLast12hPositions, {

@@ -42,7 +42,10 @@ export default function Database() {
     let fetchData = value === 'allVessels' ? fetchAll : fetchCurrentVessels;
     fetchData()
       .then((data) => {
-        setVessels(data);
+        const sortedData = data.sort((a: VesselData, b: VesselData) =>
+          sortNames(a.name, b.name),
+        );
+        setVessels(sortedData);
         setLoading(false);
       })
       .catch((error) => {
@@ -85,7 +88,10 @@ export default function Database() {
         setLoading(false);
       }
       if (filter.length > 0) {
-        setFilteredVessels(filter);
+        const sortedFilter = filter.sort((a: VesselData, b: VesselData) =>
+          sortNames(a.name, b.name),
+        );
+        setFilteredVessels(sortedFilter);
         setLoading(false);
       }
     }
@@ -197,6 +203,18 @@ export default function Database() {
       console.error('Failed to fetch positions:', error);
       setLoading(false);
     }
+  };
+  const sortNames = (a: string, b: string) => {
+    const isANumber = /^[0-9]/.test(a);
+    const isBNumber = /^[0-9]/.test(b);
+    const isAEmpty = a === '';
+    const isBEmpty = b === '';
+
+    if (isAEmpty && !isBEmpty) return 1;
+    if (!isAEmpty && isBEmpty) return -1;
+    if (isANumber && !isBNumber) return 1;
+    if (!isANumber && isBNumber) return -1;
+    return a.localeCompare(b);
   };
 
   return (

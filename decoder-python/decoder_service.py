@@ -28,9 +28,11 @@ def get_vessels():
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
+        twenty_four_hours_ago = (datetime.now() - timedelta(hours=24)).strftime('%Y%m%d%H%M%S')
         cursor.execute('''
             SELECT * FROM vessels
-        ''')
+            WHERE lastUpdateTime IS NOT NULL AND lastUpdateTime >= ?
+        ''', (twenty_four_hours_ago,))
         vessels = [dict(row) for row in cursor.fetchall()]
         return jsonify(vessels)
     finally:
@@ -82,7 +84,6 @@ def get_recent_positions(mmsi):
 
 @app.route('/get-vessel/<int:mmsi>', methods=['GET'])
 def get_vessel_info(mmsi):
-    """Endpoint to retrieve information of a specific vessel by its MMSI, excluding position data."""
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
@@ -111,6 +112,28 @@ def get_vessel_info(mmsi):
         return jsonify({"error": str(e)}), 500
     finally:
         conn.close()
+
+
+@app.route('/get-vessels-by-date/<start_date>/<end_date>', methods=['GET'])
+def get_vessels_by_date(start_date, end_date):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        start_datetime = datetime.strptime(start_date, '%Y%m%d').strftime('%Y%m%d%H%M%S')
+        end_datetime = datetime.strptime(end_date, '%Y%m%d').strftime('%Y%m%d%H%M%S')
+        
+        cursor.execute('''
+            SELECT * FROM vessels
+            WHERE lastUpdateTime >= ? AND lastUpdateTime <= ?
+        ''', (start_datetime, end_datetime))
+        
+        vessels = [dict(row) for row in cursor.fetchall()]
+        return jsonify(vessels)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 
+    finally:
+        conn.close()
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, threaded=True)

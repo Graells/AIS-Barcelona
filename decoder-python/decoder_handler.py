@@ -44,22 +44,6 @@ def position_to_dict(position):
         "lon": position.lon
     }
 
-def vessel_data_to_dict(vessel_data):
-    return {
-        key: value for key, value in {
-            "mmsi": vessel_data.mmsi,
-            "name": vessel_data.name,
-            "lat": vessel_data.lat,
-            "lon": vessel_data.lon,
-            "lastUpdateTime": vessel_data.lastUpdateTime,
-            "destination": vessel_data.destination,
-            "callsign": vessel_data.callsign,
-            "speed": vessel_data.speed,
-            "ship_type": vessel_data.ship_type,
-            # "positions": [position_to_dict(pos) for pos in vessel_data.positions.values()]
-        }.items() if value is not None
-    }
-
 def get_db_connection():
     return sqlite3.connect('decoded_data.db')
 
@@ -98,17 +82,17 @@ def cleanup_old_data():
     with get_db_connection() as conn:
         try:
             cursor = conn.cursor()
-            twenty_five_hours_ago = (datetime.now() - timedelta(hours=25)).strftime('%Y%m%d%H%M%S')
+            deadline = (datetime.now() - timedelta(hours=48)).strftime('%Y%m%d%H%M%S')
 
             cursor.execute('''
                 DELETE FROM vessels
                 WHERE lastUpdateTime < ?
-            ''', (twenty_five_hours_ago,))
+            ''', (deadline,))
 
             cursor.execute('''
                 DELETE FROM positions
                 WHERE timestamp < ?
-            ''', (twenty_five_hours_ago,))
+            ''', (deadline,))
 
             conn.commit()
         except Exception as e:
@@ -120,27 +104,16 @@ def cleanup_old_data():
 class TagsProcessingService:
     def __init__(self):
         self.vessels = {}
-        self.timing_data = {
-            'update_vessel_data_with_sentence': [],
-            'position_check': [],
-            'append_and_sort': [],
-            'update_positions': [],
-            'process_sentences': []
-        }
 
     def process_sentences(self, sentences):
-        start_time = time.time()
         for sentence in sentences:
-            start_update = time.time()
             vessel_data = self.vessels.get(sentence['mmsi'])
             if not vessel_data:
                 vessel_data = VesselData(mmsi=sentence['mmsi'])
                 self.vessels[sentence['mmsi']] = vessel_data
 
             self.update_vessel_data_with_sentence(vessel_data, sentence)
-            self.timing_data['update_vessel_data_with_sentence'].append(time.time() - start_update)
 
-        start_update_positions = time.time()
         for vessel_data in self.vessels.values():
             if vessel_data.positions:
                 latest_position = vessel_data.positions.peekitem(-1)[1]
@@ -148,11 +121,6 @@ class TagsProcessingService:
                 vessel_data.lon = latest_position.lon
                 vessel_data.lastUpdateTime = latest_position.timestamp
             insert_or_update_vessel_data(vessel_data)
-        self.timing_data['update_positions'].append(time.time() - start_update_positions)
-        total_time = time.time() - start_time
-        self.timing_data['process_sentences'].append(total_time)
-        # logger.info(f"Total processing time for sentences: {total_time:.2f} seconds.")
-        self.log_timing_data()
         return list(self.vessels.values())
 
     def update_vessel_data_with_sentence(self, vessel_data, sentence):
@@ -170,13 +138,6 @@ class TagsProcessingService:
             vessel_data.speed = sentence['speed']
         if 'ship_type' in sentence and sentence['ship_type'] not in ['', 'unknown', None]:
             vessel_data.ship_type = sentence['ship_type']
-
-
-    def log_timing_data(self):
-        for key, times in self.timing_data.items():
-            if times:
-                average_time = sum(times) / len(times)
-                # logger.info(f"Average time for {key}: {average_time:.2f} seconds")
 
 def process_data(file_path):
     if not pathlib.Path(file_path).exists():
@@ -208,10 +169,10 @@ def process_data(file_path):
     return decoded_data_with_timestamps
 
 def is_valid_mmsi(mmsi):
-    return isinstance(mmsi, int) and 100000000 <= mmsi <= 999999999
+    return isinstance(mmsi, int) and 0 <= mmsi <= 999999999
 
 def is_msg_type_in_range(msg_type):
-    return 1 <= msg_type <= 5
+    return 1 <= msg_type <= 27
 
 def filter_data(decoded_data):
     return [
@@ -227,14 +188,50 @@ def write_to_json(data, output_path):
     except Exception as e:
         print(f"Failed to write JSON: {e}")
 
+def vessel_data_to_dict(vessel_data):
+    return {
+        key: value for key, value in {
+            "mmsi": vessel_data.mmsi,
+            "name": vessel_data.name,
+            "lat": vessel_data.lat,
+            "lon": vessel_data.lon,
+            "lastUpdateTime": vessel_data.lastUpdateTime,
+            "destination": vessel_data.destination,
+            "callsign": vessel_data.callsign,
+            "speed": vessel_data.speed,
+            "ship_type": vessel_data.ship_type,
+            # "positions": [position_to_dict(pos) for pos in vessel_data.positions.values()]
+        }.items() if value is not None
+    }
+
+def custom_serializer(obj):
+    """Recursively serialize complex data structures containing custom objects to JSON-compatible formats."""
+    if isinstance(obj, dict):
+        return {key: custom_serializer(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [custom_serializer(item) for item in obj]
+    elif hasattr(obj, "__dict__"):
+        return custom_serializer(obj.__dict__) 
+    elif isinstance(obj, (str, int, float, bool, type(None))):
+        return obj
+    return str(obj) 
+
 def process_and_save_data():
     base_path = pathlib.Path(__file__).parent
     combined_whole = base_path / 'input' / 'combined_last_12_hours.txt'
+    output_path = base_path / 'output' / 'processed_results.json'
     try:
         processed_data = process_data(combined_whole)
         filtered_data = filter_data(processed_data)
         service = TagsProcessingService()
-        service.process_sentences(filtered_data)
+        vessel_data = service.process_sentences(filtered_data)
+
+        # with open(output_path, 'w', encoding='utf-8') as file:
+        #     json.dump(custom_serializer(processed_data), file, ensure_ascii=False, indent=4)
+
+        # vessel_data_json = [vessel_data_to_dict(v) for v in processed_data]
+        # write_to_json(vessel_data, output_path)
+
     except Exception as e:
         print(f"An error occurred: {e}")
 

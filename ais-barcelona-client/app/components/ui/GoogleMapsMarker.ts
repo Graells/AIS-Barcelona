@@ -47,17 +47,20 @@ const GoogleMapsMarker = ({
         if (sentence.ship_type) {
           const shipImgSrc = getShipImageUrl(sentence.ship_type);
           shipImg.src = shipImgSrc;
+        } else if (sentence.mmsi === 2241128) {
+          shipImg.src = '/collserola.png';
+          shipImg.className = 'torra-icon';
+        } else if (sentence.mmsi === 2241068) {
+          shipImg.src = '';
         } else {
           shipImg.src = '/other.png';
         }
         if (sentence.lat && sentence.lon) {
-          let collisionBehavior = google.maps.CollisionBehavior.REQUIRED;
           const marker = new AdvancedMarkerElement({
             map,
             position: { lat: sentence.lat, lng: sentence.lon },
             title: sentence.name,
             content: shipImg,
-            // collisionBehavior,
           });
 
           if (!markersByMMSI[sentence.mmsi]) {

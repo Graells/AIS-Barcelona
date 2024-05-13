@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Mapa from '@/app/components/ui/Mapa';
-import { fetchAll, fetchCurrentVessels } from './lib/data-fetch';
+import { fetchAll, fetchByData, fetchCurrentVessels } from './lib/data-fetch';
 import { VesselData } from './definitions/vesselData';
 import {
   countVesselTypes,
@@ -22,9 +22,15 @@ export default function Home() {
   const [selectedOption, setSelectedOption] = useState('currentVessels');
   const searchParams = useSearchParams();
   const mmsi: any = searchParams.get('mmsi');
+  const startDate: any = searchParams.get('start');
+  const endDate: any = searchParams.get('end');
 
   useEffect(() => {
-    loadCurrentData();
+    if (startDate && endDate) {
+      loadDataByDate(startDate, endDate);
+    } else {
+      loadCurrentData();
+    }
     updateTimestamp();
   }, [searchParams]);
 
@@ -76,6 +82,20 @@ export default function Home() {
     }
     setLoading(false);
   }
+
+  async function loadDataByDate(start: string, end: string) {
+    setLoading(true);
+    try {
+      const data = await fetchByData(start, end);
+      setSentences(data);
+      setVesselTypeCounts(countVesselTypes(data));
+      updateTimestamp();
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    }
+    setLoading(false);
+  }
+
   const updateTimestamp = () => {
     const now = new Date().toLocaleString();
     setLastUpdated(now);
