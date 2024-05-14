@@ -5,6 +5,8 @@ const getVesselPositions = process.env
 const getLast12hPositions = process.env
   .NEXT_PUBLIC_API_URL_LAST12H_POSITIONS as string;
 const getVessel = process.env.NEXT_PUBLIC_API_URL_VESSEL as string;
+const getVesselByDate = process.env
+  .NEXT_PUBLIC_API_URL_VESSELS_BY_DATE as string;
 
 export async function fetchAll() {
   const response = await fetch(getVessels, {
@@ -46,8 +48,11 @@ export async function fetchVesselPositions(mmsi: number) {
   const data = await response.json();
   return data;
 }
-export async function fetchByData(start: string, end: string) {
-  const response = await fetch(`${getVesselPositions}/${start}/${end}`, {
+export async function fetchByData(date: any) {
+  console.log('fetchByData', date);
+  console.log('fetchByData URI', getVesselByDate);
+  console.log('fetchByData URI', `${getVesselByDate}/${date}`);
+  const response = await fetch(`${getVesselByDate}/${date}`, {
     cache: 'no-store',
   });
   const data = await response.json();

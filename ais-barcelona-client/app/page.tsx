@@ -22,18 +22,16 @@ export default function Home() {
   const [selectedOption, setSelectedOption] = useState('currentVessels');
   const searchParams = useSearchParams();
   const mmsi: any = searchParams.get('mmsi');
-  const startDate: any = searchParams.get('start');
-  const endDate: any = searchParams.get('end');
+  const date: any = searchParams.get('date');
 
   useEffect(() => {
-    if (startDate && endDate) {
-      loadDataByDate(startDate, endDate);
+    if (date) {
+      loadDataByDate(date);
     } else {
       loadCurrentData();
     }
     updateTimestamp();
   }, [searchParams]);
-
   const handleSelectChange = (event: {
     target: { value: React.SetStateAction<string> };
   }) => {
@@ -83,10 +81,10 @@ export default function Home() {
     setLoading(false);
   }
 
-  async function loadDataByDate(start: string, end: string) {
+  async function loadDataByDate(date: string) {
     setLoading(true);
     try {
-      const data = await fetchByData(start, end);
+      const data = await fetchByData(date);
       setSentences(data);
       setVesselTypeCounts(countVesselTypes(data));
       updateTimestamp();

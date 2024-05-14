@@ -114,25 +114,26 @@ def get_vessel_info(mmsi):
         conn.close()
 
 
-@app.route('/get-vessels-by-date/<start_date>/<end_date>', methods=['GET'])
-def get_vessels_by_date(start_date, end_date):
+@app.route('/get-vessels-by-date/<date>', methods=['GET'])
+def get_vessels_by_date(date):
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        start_datetime = datetime.strptime(start_date, '%Y%m%d').strftime('%Y%m%d%H%M%S')
-        end_datetime = datetime.strptime(end_date, '%Y%m%d').strftime('%Y%m%d%H%M%S')
+        start_datetime = datetime.strptime(date, '%Y%m%d')
+        end_datetime = start_datetime + timedelta(days=1)
         
         cursor.execute('''
             SELECT * FROM vessels
-            WHERE lastUpdateTime >= ? AND lastUpdateTime <= ?
-        ''', (start_datetime, end_datetime))
+            WHERE lastUpdateTime >= ? AND lastUpdateTime < ?
+        ''', (start_datetime.strftime('%Y%m%d%H%M%S'), end_datetime.strftime('%Y%m%d%H%M%S')))
         
         vessels = [dict(row) for row in cursor.fetchall()]
         return jsonify(vessels)
     except ValueError as e:
-        return jsonify({"error": str(e)}), 
+        return jsonify({"error": str(e)}), 400
     finally:
         conn.close()
+
 
 
 if __name__ == '__main__':
