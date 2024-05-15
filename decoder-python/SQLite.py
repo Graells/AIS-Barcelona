@@ -7,14 +7,14 @@ def create_database():
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS vessels (
             mmsi INTEGER PRIMARY KEY,
-            name TEXT,
+            name TEXT DEFAULT '',
             lat REAL,
             lon REAL,
             lastUpdateTime TEXT,
-            destination TEXT,
-            callsign TEXT,
+            destination TEXT DEFAULT '',
+            callsign TEXT DEFAULT '',
             speed REAL,
-            ship_type INTEGER
+            ship_type INTEGER DEFAULT 0
         )
     ''')
 

@@ -65,11 +65,13 @@ export default function Database() {
       setTimeInPortResults({});
     } else {
       setLoading(true);
-      const filter = vessels.filter(
-        (vessel) =>
-          vessel.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          vessel.mmsi.toString().includes(searchQuery),
-      );
+      const filter = vessels.filter((vessel) => {
+        const name = vessel.name ?? ''; // Default to empty string if name is null or undefined
+        return (
+          name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          vessel.mmsi.toString().includes(searchQuery)
+        );
+      });
       if (filter.length === 0) {
         setFilteredVessels([
           {
@@ -204,17 +206,19 @@ export default function Database() {
       setLoading(false);
     }
   };
-  const sortNames = (a: string, b: string) => {
-    const isANumber = /^[0-9]/.test(a);
-    const isBNumber = /^[0-9]/.test(b);
-    const isAEmpty = a === '';
-    const isBEmpty = b === '';
+  const sortNames = (a: string | null, b: string | null) => {
+    const nameA = a ?? '';
+    const nameB = b ?? '';
+    const isANumber = /^[0-9]/.test(nameA);
+    const isBNumber = /^[0-9]/.test(nameB);
+    const isAEmpty = nameA === '';
+    const isBEmpty = nameB === '';
 
     if (isAEmpty && !isBEmpty) return 1;
     if (!isAEmpty && isBEmpty) return -1;
     if (isANumber && !isBNumber) return 1;
     if (!isANumber && isBNumber) return -1;
-    return a.localeCompare(b);
+    return nameA.localeCompare(nameB);
   };
 
   return (
@@ -274,7 +278,7 @@ export default function Database() {
                   className="cursor-pointer text-lg font-bold underline hover:text-sky-500"
                   onClick={() => router.push(`/?mmsi=${vessel.mmsi}`)}
                 >
-                  {vessel.name} (MMSI: {vessel.mmsi})
+                  {vessel.name ?? 'Unknown'} (MMSI: {vessel.mmsi})
                 </h2>
                 {vessel.ship_type !== undefined && (
                   <p>Ship Type: {getShipType(vessel.ship_type)}</p>
@@ -316,7 +320,7 @@ export default function Database() {
                   className="cursor-pointer text-lg font-bold underline hover:text-sky-500"
                   onClick={() => router.push(`/?mmsi=${vessel.mmsi}`)}
                 >
-                  {vessel.name} (MMSI: {vessel.mmsi})
+                  {vessel.name ?? 'Unknown'} (MMSI: {vessel.mmsi})
                 </h2>
                 {vessel.ship_type !== undefined && (
                   <p>Ship Type: {getShipType(vessel.ship_type)}</p>

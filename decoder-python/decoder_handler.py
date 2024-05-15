@@ -55,34 +55,55 @@ def insert_or_update_vessel_data(vessel_data):
                 INSERT INTO vessels (mmsi, name, lat, lon, lastUpdateTime, destination, callsign, speed, ship_type)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mmsi) DO UPDATE SET
-                    name = CASE WHEN excluded.name NOT IN ('', 'unknown', NULL) THEN excluded.name ELSE name END,
+                    name = CASE 
+                               WHEN excluded.name NOT IN ('', ' ', 'unknown', NULL) 
+                               THEN excluded.name 
+                               ELSE vessels.name 
+                           END,
                     lat = excluded.lat,
                     lon = excluded.lon,
                     lastUpdateTime = excluded.lastUpdateTime,
                     destination = excluded.destination,
-                    callsign = CASE WHEN excluded.callsign NOT IN ('', 'unknown', NULL) THEN excluded.callsign ELSE callsign END,
+                    callsign = CASE 
+                                   WHEN excluded.callsign NOT IN ('', ' ', 'unknown', NULL) 
+                                   THEN excluded.callsign 
+                                   ELSE vessels.callsign 
+                               END,
                     speed = excluded.speed,
-                    ship_type = CASE WHEN excluded.ship_type NOT IN ('', 'unknown', NULL) THEN excluded.ship_type ELSE ship_type END
-            ''', (vessel_data.mmsi, vessel_data.name, vessel_data.lat, vessel_data.lon, vessel_data.lastUpdateTime, vessel_data.destination, vessel_data.callsign, vessel_data.speed, vessel_data.ship_type))
-
+                    ship_type = CASE 
+                                    WHEN excluded.ship_type NOT IN ('', ' ', 'unknown', NULL) 
+                                    THEN excluded.ship_type 
+                                    ELSE vessels.ship_type 
+                                END
+            ''', (
+                vessel_data.mmsi, 
+                vessel_data.name if vessel_data.name not in ('', ' ', 'unknown', None) else None, 
+                vessel_data.lat, vessel_data.lon, 
+                vessel_data.lastUpdateTime, 
+                vessel_data.destination, 
+                vessel_data.callsign if vessel_data.callsign not in ('', ' ', 'unknown', None) else None, 
+                vessel_data.speed, 
+                vessel_data.ship_type if vessel_data.ship_type not in ('', ' ', 'unknown', None) else None
+            ))
             if vessel_data.positions:
-                for position in vessel_data.positions:
+                for position in vessel_data.positions.values():
                     cursor.execute('''
                         INSERT INTO positions (mmsi, timestamp, lat, lon)
                         VALUES (?, ?, ?, ?)
                         ON CONFLICT DO NOTHING
-                    ''', (vessel_data.mmsi, *position)) 
+                    ''', (vessel_data.mmsi, position.timestamp, position.lat, position.lon))
             conn.commit()
         except Exception as e:
-            print(f"Error inserting or updating vessel data: {e}")
+            logger.error(f"Error inserting or updating vessel data: {e}")
             conn.rollback()
             raise e
+
 
 def cleanup_old_data():
     with get_db_connection() as conn:
         try:
             cursor = conn.cursor()
-            deadline = (datetime.now() - timedelta(hours=48)).strftime('%Y%m%d%H%M%S')
+            deadline = (datetime.now() - timedelta(hours=96)).strftime('%Y%m%d%H%M%S')
 
             cursor.execute('''
                 DELETE FROM vessels
@@ -96,7 +117,7 @@ def cleanup_old_data():
 
             conn.commit()
         except Exception as e:
-            print(f"Error cleaning up old data: {e}")
+            logger.error(f"Error cleaning up old data: {e}")
             conn.rollback()
             raise e
 
@@ -128,20 +149,33 @@ class TagsProcessingService:
             new_position = Position(timestamp=sentence['receiver_timestamp'], lat=sentence['lat'], lon=sentence['lon'])
             position_key = (new_position.timestamp, new_position.lat, new_position.lon)
             vessel_data.positions[position_key] = new_position
-        if 'shipname' in sentence and sentence['shipname'] not in ['', 'unknown', None]:
-            vessel_data.name = sentence['shipname']
+        if 'shipname' in sentence:
+            log_vessel_data_update(vessel_data, 'name', sentence.get('shipname', ''), vessel_data.name)
+            if sentence.get('shipname', '') not in ('', ' ', 'unknown', None):
+                vessel_data.name = sentence['shipname']
         if 'destination' in sentence:
             vessel_data.destination = sentence['destination']
-        if 'callsign' in sentence and sentence['callsign'] not in ['', 'unknown', None]:
-            vessel_data.callsign = sentence['callsign']
+        if 'callsign' in sentence:
+            log_vessel_data_update(vessel_data, 'callsign', sentence.get('callsign', ''), vessel_data.callsign)
+            if sentence.get('callsign', '') not in ('', ' ', 'unknown', None):
+                vessel_data.callsign = sentence['callsign']
         if 'speed' in sentence:
             vessel_data.speed = sentence['speed']
-        if 'ship_type' in sentence and sentence['ship_type'] not in ['', 'unknown', None]:
-            vessel_data.ship_type = sentence['ship_type']
+        if 'ship_type' in sentence:
+            log_vessel_data_update(vessel_data, 'ship_type', sentence.get('ship_type', None), vessel_data.ship_type)
+            if sentence.get('ship_type', None) not in ('', ' ', 'unknown', None):
+                vessel_data.ship_type = sentence['ship_type']
+
+def log_vessel_data_update(vessel_data, update_field, new_value, old_value):
+    if new_value not in ('', ' ', 'unknown', None):
+        logger.info(f"Updating {update_field} for vessel {vessel_data.mmsi}: {old_value} -> {new_value}")
+    else:
+        logger.info(f"Retaining {update_field} for vessel {vessel_data.mmsi}: {old_value} (new value was {new_value})")
+
 
 def process_data(file_path):
     if not pathlib.Path(file_path).exists():
-        print(f"File not found: {file_path}")
+        logger.error(f"File not found: {file_path}")
         return []
 
     def decode_message(msg):
@@ -158,9 +192,9 @@ def process_data(file_path):
 
             return decoded_dict
         except ValueError as ve:
-            print(f"ValueError decoding message: {msg}. Error: {ve}")
+            logger.error(f"ValueError decoding message: {msg}. Error: {ve}")
         except Exception as e:
-            print(f"Unexpected error decoding message: {msg}. Error: {e}")
+            logger.error(f"Unexpected error decoding message: {msg}. Error: {e}")
 
     decoded_data_with_timestamps = []
     with FileReaderStream(str(file_path)) as file_reader:
@@ -186,7 +220,7 @@ def write_to_json(data, output_path):
         with open(output_path, 'w') as json_file:
             json_file.write(json_output)
     except Exception as e:
-        print(f"Failed to write JSON: {e}")
+        logger.error(f"Failed to write JSON: {e}")
 
 def vessel_data_to_dict(vessel_data):
     return {
@@ -205,7 +239,6 @@ def vessel_data_to_dict(vessel_data):
     }
 
 def custom_serializer(obj):
-    """Recursively serialize complex data structures containing custom objects to JSON-compatible formats."""
     if isinstance(obj, dict):
         return {key: custom_serializer(value) for key, value in obj.items()}
     elif isinstance(obj, list):
@@ -233,18 +266,18 @@ def process_and_save_data():
         # write_to_json(vessel_data, output_path)
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred: {e}")
 
 def run_fetch_script():
     script_path = './fetch12FromRaspberry.sh'
     try:
         result = subprocess.run(script_path, shell=True, capture_output=True, text=True)
-        print("STDOUT:", result.stdout)
-        print("STDERR:", result.stderr)
+        logger.info("STDOUT: %s", result.stdout)
+        logger.error("STDERR: %s", result.stderr)
     except subprocess.CalledProcessError as e:
-        print(f"An error occurred: {e}")
-        print(f"STDOUT: {e.stdout}")
-        print(f"STDERR: {e.stderr}")
+        logger.error(f"An error occurred: {e}")
+        logger.error(f"STDOUT: {e.stdout}")
+        logger.error(f"STDERR: {e.stderr}")
 
 def main_loop():
     while True:
