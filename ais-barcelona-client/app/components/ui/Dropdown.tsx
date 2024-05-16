@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 type OptionType = {
   value: string;
@@ -12,12 +12,12 @@ interface DropdownProps {
   disabled: boolean;
 }
 
-const Dropdown: React.FC<DropdownProps> = ({
+export default function Dropdown({
   options,
   selectedOption,
   onChange,
   disabled,
-}) => {
+}: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -65,6 +65,4 @@ const Dropdown: React.FC<DropdownProps> = ({
       )}
     </div>
   );
-};
-
-export default Dropdown;
+}

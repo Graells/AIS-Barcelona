@@ -1,7 +1,6 @@
 import Link from 'next/link';
-import React from 'react';
 
-const AboutPage: React.FC = () => {
+export default function AboutPage() {
   return (
     <div className="mx-auto max-w-4xl p-7">
       <header>
@@ -48,9 +47,9 @@ const AboutPage: React.FC = () => {
             leverage the data collected by a private AIS antenna receiver. This
             infrastructure not only allows the visualization on a map but also
             enhances AIS data handling capabilities collected from a private AIS
-            receiver, which I believe opens the door for further applications
-            and analyses of AIS data within the maritime sector. Thereby,
-            unlocking new research potentials and operational insights.
+            receiver, which opens the door for further applications and analyses
+            of AIS data within the maritime sector. Thereby, unlocking new
+            research potentials and operational insights.
           </p>
         </section>
       </main>
@@ -62,6 +61,4 @@ const AboutPage: React.FC = () => {
       </footer>
     </div>
   );
-};
-
-export default AboutPage;
+}

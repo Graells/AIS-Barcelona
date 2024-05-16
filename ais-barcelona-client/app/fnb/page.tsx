@@ -2,9 +2,8 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import React from 'react';
 
-const FnbPage: React.FC = () => {
+export default function FnbPage() {
   const router = useRouter();
   return (
     <div className="flex flex-col items-center justify-center ">
@@ -24,5 +23,3 @@ const FnbPage: React.FC = () => {
     </div>
   );
 };
-
-export default FnbPage;

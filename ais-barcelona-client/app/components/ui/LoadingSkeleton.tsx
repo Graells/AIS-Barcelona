@@ -1,6 +1,4 @@
-import React from 'react';
-
-const LoadingSkeleton = () => {
+export default function LoadingSkeleton() {
   return (
     <div
       style={{
@@ -32,6 +30,4 @@ const LoadingSkeleton = () => {
       `}</style>
     </div>
   );
-};
-
-export default LoadingSkeleton;
+}

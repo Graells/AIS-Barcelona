@@ -44,8 +44,6 @@ def combine_recent_files(base_path, cutoff_time):
 while True:
     current_time = datetime.datetime.now()
     cutoff_time = current_time - datetime.timedelta(hours=12)
-    logging.info("Current time: {}".format(current_time))
-    logging.info("Cutoff time: {}".format(cutoff_time))
 
     if os.path.exists(flag_file_path):
         os.remove(flag_file_path)
@@ -60,4 +58,4 @@ while True:
     except Exception as e:
         logging.error("Failed to cleanup and combine files: {}".format(e))
     
-    time.sleep(30) # Sleep for 30 seconds
+    time.sleep(30)

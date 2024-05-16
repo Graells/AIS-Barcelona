@@ -54,15 +54,11 @@ base_path = pathlib.Path(__file__).parent
 today_file = base_path.joinpath('input/today.txt')
 yesterday_file = base_path.joinpath('input/yesterday.txt')
 
-# Read and combine raw file contents before processing
 combined_raw_data = read_and_combine_files(today_file, yesterday_file)
 
-# Process the combined raw data
 processed_data = process_data(combined_raw_data)
 
-# Filter the processed data
 filtered_data = filter_data(processed_data)
 
-# Write the filtered data to JSON
 output_path = base_path.joinpath('output/combined_decoded_2448.json')
 write_to_json(filtered_data, output_path)

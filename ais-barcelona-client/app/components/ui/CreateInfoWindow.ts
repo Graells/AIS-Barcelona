@@ -30,9 +30,6 @@ const CreateInfoWindow = (
     const trackButton = document.getElementById('trackButton');
     if (trackButton) {
       trackButton.addEventListener('click', async () => {
-        // clearExistingMarkers().then(() => {
-        //   google.maps.event.trigger(map, 'resize');
-        // });
         infoWindow.close();
         const positions = await fetchVesselPositions(vessel.mmsi);
         drawTrackLine(positions, map);
@@ -67,11 +64,6 @@ const drawTrackLine = (
   positions: Array<{ lat: number; lon: number; timestamp: string }>,
   map: google.maps.Map,
 ) => {
-  // const uniquePositions = positions.filter(
-  //   (value, index, self) =>
-  //     index ===
-  //     self.findIndex((t) => t.lat === value.lat && t.lon === value.lon),
-  // );
   clearExistingMarkers();
 
   const path = positions.map((position) => ({
@@ -100,19 +92,6 @@ const drawTrackLine = (
       parseInt(timestamp.substring(10, 12), 10), // minute
       parseInt(timestamp.substring(12, 14), 10), // second
     );
-  };
-  const format2Timestamp = (timestamp: string): string => {
-    const date = new Date(timestamp);
-    const formatted = date.toLocaleString('en-UK', {
-      day: '2-digit',
-      month: '2-digit', // Numeric, 2-digit
-      year: 'numeric', // Numeric, 4-digit
-      hour: '2-digit', // Numeric, 2-digit, 24-hour clock
-      minute: '2-digit', // Numeric, 2-digit
-      second: '2-digit', // Numeric, 2-digit
-      hour12: false, // Use 24-hour clock
-    });
-    return formatted;
   };
 
   positions.forEach((position) => {

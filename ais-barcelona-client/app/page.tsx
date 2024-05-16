@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Mapa from '@/app/components/ui/Mapa';
 import { fetchAll, fetchByData, fetchCurrentVessels } from './lib/data-fetch';
 import { VesselData } from './definitions/vesselData';

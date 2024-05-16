@@ -1,18 +1,17 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import loadGoogleMapsApi from "@/app/lib/GoogleMapsLoader";
+import { useEffect, useRef, useState } from 'react';
+import loadGoogleMapsApi from '@/app/lib/GoogleMapsLoader';
 import GoogleMapsMarker from '@/app/components/ui/GoogleMapsMarker';
-import GoogleMapsStyle from '@/app/components/theme/GoogleMapsStyle';
 import { VesselData } from '@/app/definitions/vesselData';
 
-const Mapa = ({
+export default function Mapa({
   sentences,
   mmsi,
 }: {
   sentences: VesselData[];
   mmsi: number;
-}) => {
+}) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
 
@@ -65,11 +64,8 @@ const Mapa = ({
             sentences={sentences}
             mmsi={mmsi}
           />
-          {/* <GoogleMapsStyle map={mapInstance} /> */}
         </div>
       )}
     </>
   );
 };
-
-export default Mapa;

@@ -10,8 +10,6 @@ const getVesselByDate = process.env
 
 export async function fetchAll() {
   const response = await fetch(getVessels, {
-    // 3001/get-decoded-2448
-    // ais-tags
     // next: { revalidate: 60 },
     cache: 'no-store',
   });
@@ -20,8 +18,6 @@ export async function fetchAll() {
 }
 export async function fetchCurrentVessels() {
   const response = await fetch(getCurrentVessels, {
-    // 3001/get-decoded-2448
-    // ais-tags
     // next: { revalidate: 60 },
     cache: 'no-store',
   });
@@ -30,8 +26,6 @@ export async function fetchCurrentVessels() {
 }
 export async function fetchVessel() {
   const response = await fetch(getVessel, {
-    // 3001/get-decoded-2448
-    // ais-tags
     // next: { revalidate: 60 },
     cache: 'no-store',
   });
@@ -40,8 +34,6 @@ export async function fetchVessel() {
 }
 export async function fetchVesselPositions(mmsi: number) {
   const response = await fetch(`${getVesselPositions}/${mmsi}`, {
-    // 3001/get-decoded-2448
-    // ais-tags
     // next: { revalidate: 60 },
     cache: 'no-store',
   });
@@ -49,10 +41,8 @@ export async function fetchVesselPositions(mmsi: number) {
   return data;
 }
 export async function fetchByData(date: any) {
-  console.log('fetchByData', date);
-  console.log('fetchByData URI', getVesselByDate);
-  console.log('fetchByData URI', `${getVesselByDate}/${date}`);
   const response = await fetch(`${getVesselByDate}/${date}`, {
+    // next: { revalidate: 60 },
     cache: 'no-store',
   });
   const data = await response.json();
@@ -61,8 +51,6 @@ export async function fetchByData(date: any) {
 
 export async function fetchLast12hVesselPositions() {
   const response = await fetch(getLast12hPositions, {
-    // 3001/get-decoded-2448
-    // ais-tags
     // next: { revalidate: 60 },
     cache: 'no-store',
   });

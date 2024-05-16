@@ -11,7 +11,7 @@ const links = [
   { name: 'About', href: '/about', icon: null },
 ];
 
-function NavBar() {
+export default function NavBar() {
   const pathname = usePathname();
   const isActiveLink = (linkHref: string, pathname: string) => {
     if (pathname === linkHref) {
@@ -59,5 +59,3 @@ function NavBar() {
     </nav>
   );
 }
-
-export default NavBar;

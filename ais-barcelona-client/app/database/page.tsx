@@ -66,7 +66,7 @@ export default function Database() {
     } else {
       setLoading(true);
       const filter = vessels.filter((vessel) => {
-        const name = vessel.name ?? ''; // Default to empty string if name is null or undefined
+        const name = vessel.name ?? '';
         return (
           name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           vessel.mmsi.toString().includes(searchQuery)
@@ -162,11 +162,6 @@ export default function Database() {
     let totalTime: any = 0;
     let inPort: boolean = false;
     let entryTime: any = null;
-    // const uniquePositions = positions.filter(
-    //   (value, index, self) =>
-    //     index ===
-    //     self.findIndex((t) => t.lat === value.lat && t.lon === value.lon),
-    // );
 
     positions.forEach(
       (position: { lat: number; lon: number; timestamp: string }) => {

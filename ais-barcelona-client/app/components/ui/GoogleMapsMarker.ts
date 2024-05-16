@@ -1,12 +1,11 @@
 import { getShipImageUrl } from '@/app/utils/shipUtils';
-import { MarkerWithLabel } from '@googlemaps/markerwithlabel';
 import CreateInfoWindow from './CreateInfoWindow';
 import { VesselData } from '@/app/definitions/vesselData';
 
 const markers: any[] = [];
 const markersByMMSI: any = {};
 
-const GoogleMapsMarker = ({
+export default function GoogleMapsMarker({
   map,
   sentences,
   mmsi,
@@ -14,7 +13,7 @@ const GoogleMapsMarker = ({
   map: google.maps.Map;
   sentences: VesselData[];
   mmsi: number;
-}) => {
+}) {
   let openInfoWindow: any = null;
 
   if (!Array.isArray(sentences)) {
@@ -23,14 +22,13 @@ const GoogleMapsMarker = ({
   }
 
   markers.forEach((marker) => marker.setMap(null));
-  markers.length = 0; // Reset the markers array
+  markers.length = 0;
   markersByMMSI.length = 0;
 
   google.maps
     .importLibrary('marker')
     .then((libraries) => {
-      const { AdvancedMarkerElement, PinElement } =
-        libraries as google.maps.MarkerLibrary;
+      const { AdvancedMarkerElement } = libraries as google.maps.MarkerLibrary;
 
       const intersectionObserver = new IntersectionObserver((entries) => {
         for (const entry of entries) {
@@ -160,6 +158,4 @@ const GoogleMapsMarker = ({
       console.error('Failed to load Google Maps Marker library', error),
     );
   return null;
-};
-
-export default GoogleMapsMarker;
+}
