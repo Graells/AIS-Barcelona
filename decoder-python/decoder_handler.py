@@ -55,35 +55,23 @@ def insert_or_update_vessel_data(vessel_data):
                 INSERT INTO vessels (mmsi, name, lat, lon, lastUpdateTime, destination, callsign, speed, ship_type)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(mmsi) DO UPDATE SET
-                    name = CASE 
-                               WHEN excluded.name NOT IN ('', ' ', 'unknown', NULL) 
-                               THEN excluded.name 
-                               ELSE vessels.name 
-                           END,
+                    name = COALESCE(NULLIF(excluded.name, ''), vessels.name),
                     lat = excluded.lat,
                     lon = excluded.lon,
                     lastUpdateTime = excluded.lastUpdateTime,
                     destination = excluded.destination,
-                    callsign = CASE 
-                                   WHEN excluded.callsign NOT IN ('', ' ', 'unknown', NULL) 
-                                   THEN excluded.callsign 
-                                   ELSE vessels.callsign 
-                               END,
+                    callsign = COALESCE(NULLIF(excluded.callsign, ''), vessels.callsign),
                     speed = excluded.speed,
-                    ship_type = CASE 
-                                    WHEN excluded.ship_type NOT IN ('', ' ', 'unknown', NULL) 
-                                    THEN excluded.ship_type 
-                                    ELSE vessels.ship_type 
-                                END
+                    ship_type = COALESCE(NULLIF(excluded.ship_type, ''), vessels.ship_type)
             ''', (
                 vessel_data.mmsi, 
-                vessel_data.name if vessel_data.name not in ('', ' ', 'unknown', None) else None, 
+                vessel_data.name, 
                 vessel_data.lat, vessel_data.lon, 
                 vessel_data.lastUpdateTime, 
                 vessel_data.destination, 
-                vessel_data.callsign if vessel_data.callsign not in ('', ' ', 'unknown', None) else None, 
+                vessel_data.callsign, 
                 vessel_data.speed, 
-                vessel_data.ship_type if vessel_data.ship_type not in ('', ' ', 'unknown', None) else None
+                vessel_data.ship_type
             ))
             if vessel_data.positions:
                 for position in vessel_data.positions.values():
@@ -150,27 +138,18 @@ class TagsProcessingService:
             position_key = (new_position.timestamp, new_position.lat, new_position.lon)
             vessel_data.positions[position_key] = new_position
         if 'shipname' in sentence:
-            log_vessel_data_update(vessel_data, 'name', sentence.get('shipname', ''), vessel_data.name)
             if sentence.get('shipname', '') not in ('', ' ', 'unknown', None):
                 vessel_data.name = sentence['shipname']
         if 'destination' in sentence:
             vessel_data.destination = sentence['destination']
         if 'callsign' in sentence:
-            log_vessel_data_update(vessel_data, 'callsign', sentence.get('callsign', ''), vessel_data.callsign)
             if sentence.get('callsign', '') not in ('', ' ', 'unknown', None):
                 vessel_data.callsign = sentence['callsign']
         if 'speed' in sentence:
             vessel_data.speed = sentence['speed']
         if 'ship_type' in sentence:
-            log_vessel_data_update(vessel_data, 'ship_type', sentence.get('ship_type', None), vessel_data.ship_type)
             if sentence.get('ship_type', None) not in ('', ' ', 'unknown', None):
                 vessel_data.ship_type = sentence['ship_type']
-
-def log_vessel_data_update(vessel_data, update_field, new_value, old_value):
-    if new_value not in ('', ' ', 'unknown', None):
-        logger.info(f"Updating {update_field} for vessel {vessel_data.mmsi}: {old_value} -> {new_value}")
-    else:
-        logger.info(f"Retaining {update_field} for vessel {vessel_data.mmsi}: {old_value} (new value was {new_value})")
 
 
 def process_data(file_path):
@@ -280,6 +259,8 @@ def run_fetch_script():
         logger.error(f"STDERR: {e.stderr}")
 
 def main_loop():
+    last_cleanup_time = time.time()
+    cleanup_interval = 3600 # 1 hour
     while True:
         logging.info("Starting data processing loop.")
         begin = time.time()
@@ -290,7 +271,9 @@ def main_loop():
         process_and_save_data()
         log_time_taken(start, "Process and save data")
         start = time.time()
-        cleanup_old_data()
+        if time.time() - last_cleanup_time >= cleanup_interval:
+            cleanup_old_data()
+            last_cleanup_time = time.time()
         log_time_taken(start, "Cleanup old data")
         log_time_taken(begin, "Total loop time")
         logging.info("Data processing completed. Waiting 30 seconds.")
@@ -298,16 +281,6 @@ def main_loop():
 
 if __name__ == "__main__":
     main_loop()
-
-# def main_loop():
-#     while True:
-#         run_fetch_script()
-#         process_and_save_data()
-#         cleanup_old_data()
-#         time.sleep(30)
-
-# if __name__ == "__main__":
-#     main_loop()
 
 
 # def parse_date(timestamp):
