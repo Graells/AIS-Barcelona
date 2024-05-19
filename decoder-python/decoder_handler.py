@@ -75,11 +75,12 @@ def insert_or_update_vessel_data(vessel_data):
             ))
             if vessel_data.positions:
                 for position in vessel_data.positions.values():
-                    cursor.execute('''
-                        INSERT INTO positions (mmsi, timestamp, lat, lon)
-                        VALUES (?, ?, ?, ?)
-                        ON CONFLICT DO NOTHING
-                    ''', (vessel_data.mmsi, position.timestamp, position.lat, position.lon))
+                    if is_valid_lat_lon(position.lat, position.lon):
+                        cursor.execute('''
+                            INSERT INTO positions (mmsi, timestamp, lat, lon)
+                            VALUES (?, ?, ?, ?)
+                            ON CONFLICT DO NOTHING
+                        ''', (vessel_data.mmsi, position.timestamp, position.lat, position.lon))
             conn.commit()
         except Exception as e:
             logger.error(f"Error inserting or updating vessel data: {e}")
@@ -126,17 +127,19 @@ class TagsProcessingService:
         for vessel_data in self.vessels.values():
             if vessel_data.positions:
                 latest_position = vessel_data.positions.peekitem(-1)[1]
-                vessel_data.lat = latest_position.lat
-                vessel_data.lon = latest_position.lon
-                vessel_data.lastUpdateTime = latest_position.timestamp
+                if is_valid_lat_lon(latest_position.lat, latest_position.lon):
+                    vessel_data.lat = latest_position.lat
+                    vessel_data.lon = latest_position.lon
+                    vessel_data.lastUpdateTime = latest_position.timestamp
             insert_or_update_vessel_data(vessel_data)
         return list(self.vessels.values())
 
     def update_vessel_data_with_sentence(self, vessel_data, sentence):
         if 'lat' in sentence and 'lon' in sentence:
-            new_position = Position(timestamp=sentence['receiver_timestamp'], lat=sentence['lat'], lon=sentence['lon'])
-            position_key = (new_position.timestamp, new_position.lat, new_position.lon)
-            vessel_data.positions[position_key] = new_position
+            if is_valid_lat_lon(sentence['lat'], sentence['lon']):
+                new_position = Position(timestamp=sentence['receiver_timestamp'], lat=sentence['lat'], lon=sentence['lon'])
+                position_key = (new_position.timestamp, new_position.lat, new_position.lon)
+                vessel_data.positions[position_key] = new_position
         if 'shipname' in sentence:
             if sentence.get('shipname', '') not in ('', ' ', 'unknown', None):
                 vessel_data.name = sentence['shipname']
@@ -151,6 +154,8 @@ class TagsProcessingService:
             if sentence.get('ship_type', None) not in ('', ' ', 'unknown', None):
                 vessel_data.ship_type = sentence['ship_type']
 
+def is_valid_lat_lon(lat, lon):
+    return -90 <= lat <= 90 and -180 <= lon <= 180
 
 def process_data(file_path):
     if not pathlib.Path(file_path).exists():
