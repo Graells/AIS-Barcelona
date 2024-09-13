@@ -10,7 +10,7 @@ def create_database():
             name TEXT DEFAULT '',
             lat REAL,
             lon REAL,
-            lastUpdateTime TEXT,
+            lastUpdateTime INTEGER,
             destination TEXT DEFAULT '',
             callsign TEXT DEFAULT '',
             speed REAL,
@@ -22,7 +22,7 @@ def create_database():
         CREATE TABLE IF NOT EXISTS positions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             mmsi INTEGER,
-            timestamp TEXT,
+            timestamp INTEGER,
             lat REAL,
             lon REAL,
             FOREIGN KEY(mmsi) REFERENCES vessels(mmsi),

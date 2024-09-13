@@ -1,5 +1,6 @@
 from collections import OrderedDict
-from datetime import datetime, timedelta
+from datetime import timedelta
+import datetime
 import time
 import json
 import base64
@@ -20,7 +21,7 @@ def log_time_taken(start, stage):
 
 @dataclass
 class Position:
-    timestamp: str
+    timestamp: int
     lat: float
     lon: float
 
@@ -30,7 +31,7 @@ class VesselData:
     name: str = ''
     lat: Optional[float] = None
     lon: Optional[float] = None
-    lastUpdateTime: Optional[str] = None
+    lastUpdateTime: Optional[int] = None
     destination: Optional[str] = None
     callsign: Optional[str] = None
     speed: Optional[float] = None
@@ -155,36 +156,38 @@ class TagsProcessingService:
                 vessel_data.ship_type = sentence['ship_type']
 
 def is_valid_lat_lon(lat, lon):
-    return -90 <= lat <= 90 and -180 <= lon <= 180
+    logger.debug(f"Checking lat: {lat}, lon: {lon}")
+    return lat is not None and lon is not None and -90 <= lat <= 90 and -180 <= lon <= 180
 
-def process_data(file_path):
-    if not pathlib.Path(file_path).exists():
-        logger.error(f"File not found: {file_path}")
-        return []
 
-    def decode_message(msg):
-        try:
-            msg.tag_block.init()
-            tags = msg.tag_block.asdict()
-            decoded = msg.decode()
-            decoded_dict = decoded.asdict()
-            decoded_dict['receiver_timestamp'] = tags.get("receiver_timestamp")
+def convert_to_unix_timestamp(timestamp_str):
+    dt = datetime.datetime.strptime(timestamp_str, '%Y%m%d%H%M%S')
+    return int(dt.timestamp())
 
-            for key, value in decoded_dict.items():
-                if isinstance(value, bytes):
-                    decoded_dict[key] = base64.b64encode(value).decode('utf-8')
-
-            return decoded_dict
-        except ValueError as ve:
-            logger.error(f"ValueError decoding message: {msg}. Error: {ve}")
-        except Exception as e:
-            logger.error(f"Unexpected error decoding message: {msg}. Error: {e}")
-
+def process_data(files):
     decoded_data_with_timestamps = []
-    with FileReaderStream(str(file_path)) as file_reader:
-        decoded_data_with_timestamps = [decode_message(msg) for msg in file_reader if msg is not None]
 
-    return decoded_data_with_timestamps
+    for file in files:
+        filename_str = file.stem 
+        year_month_day_hour = filename_str[:10]
+
+        for msg in FileReaderStream(file):
+            try:
+                decoded = msg.decode()
+                data_dict = decoded.asdict()
+                raw_msg = str(msg) 
+                if len(raw_msg) >= 5:
+                    minute_second = raw_msg[-5:-1] 
+                    receiver_timestamp_str = year_month_day_hour + minute_second
+                else:
+                    receiver_timestamp_str = year_month_day_hour + '0000'
+                
+                unix_timestamp = convert_to_unix_timestamp(receiver_timestamp_str)
+                data_dict['receiver_timestamp'] = unix_timestamp
+                decoded_data_with_timestamps.append(data_dict)
+            except Exception as e:
+                print(f"Error decoding message: {e}, Message data: {data_dict}")
+    return decoded_data_with_timestamps 
 
 def is_valid_mmsi(mmsi):
     return isinstance(mmsi, int) and 0 <= mmsi <= 999999999
@@ -235,25 +238,19 @@ def custom_serializer(obj):
 
 def process_and_save_data():
     base_path = pathlib.Path(__file__).parent
-    combined_whole = base_path / 'input' / 'combined_last_12_hours.txt'
-    output_path = base_path / 'output' / 'processed_results.json'
+    files_directory = pathlib.Path(__file__).parent.joinpath('input')
+    files = list(files_directory.glob('*.txt'))
     try:
-        processed_data = process_data(combined_whole)
+        processed_data = process_data(files)
         filtered_data = filter_data(processed_data)
         service = TagsProcessingService()
         vessel_data = service.process_sentences(filtered_data)
-
-        # with open(output_path, 'w', encoding='utf-8') as file:
-        #     json.dump(custom_serializer(processed_data), file, ensure_ascii=False, indent=4)
-
-        # vessel_data_json = [vessel_data_to_dict(v) for v in processed_data]
-        # write_to_json(vessel_data, output_path)
 
     except Exception as e:
         logger.error(f"An error occurred: {e}")
 
 def run_fetch_script():
-    script_path = './fetch12FromRaspberry.sh'
+    script_path = './fetchRsyncFromRaspberry.sh'
     try:
         result = subprocess.run(script_path, shell=True, capture_output=True, text=True)
         logger.info("STDOUT: %s", result.stdout)
@@ -281,18 +278,10 @@ def main_loop():
             last_cleanup_time = time.time()
         log_time_taken(start, "Cleanup old data")
         log_time_taken(begin, "Total loop time")
-        logging.info("Data processing completed. Waiting 30 seconds.")
-        time.sleep(30)
+        logging.info("Data processing completed. Waiting 5 minutes.")
+        time.sleep(300)
 
 if __name__ == "__main__":
     main_loop()
 
 
-# def parse_date(timestamp):
-#     try:
-#         return datetime.strptime(timestamp, '%Y%m%d%H%M%S')
-#     except ValueError:
-#         try:
-#             return datetime.strptime(timestamp.split(':')[1], '%Y%m%d%H%M%S')
-#         except ValueError:
-#             return None

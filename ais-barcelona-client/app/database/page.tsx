@@ -104,10 +104,24 @@ export default function Database() {
     setTimeInPortResults({});
   };
 
-  const formatTimestamp = (timestamp: string | undefined): string => {
+  // const formatTimestamp = (timestamp: string | undefined): string => {
+  //   if (!timestamp) return 'N/A';
+  //   const formatted = `${timestamp.substring(6, 8)}/${timestamp.substring(4, 6)}/${timestamp.substring(0, 4)} ${timestamp.substring(8, 10)}:${timestamp.substring(10, 12)}:${timestamp.substring(12, 14)}`;
+  //   return formatted;
+  // };
+  const formatTimestamp = (timestamp: number | undefined): string => {
     if (!timestamp) return 'N/A';
-    const formatted = `${timestamp.substring(6, 8)}/${timestamp.substring(4, 6)}/${timestamp.substring(0, 4)} ${timestamp.substring(8, 10)}:${timestamp.substring(10, 12)}:${timestamp.substring(12, 14)}`;
-    return formatted;
+
+    const date = new Date(timestamp * 1000);
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
   const isPointInPolygon = (lat: number, lon: number) => {

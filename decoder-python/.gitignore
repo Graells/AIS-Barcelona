@@ -42,3 +42,5 @@ build/
 input/
 output/
 decoded_data.db
+fetchRsyncFromRaspberry.sh
+.DS_Store

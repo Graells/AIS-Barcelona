@@ -24,7 +24,7 @@ def parse_timestamp(timestamp):
             return None
         
 def format_datetime(dt):
-    return dt.strftime('%Y%m%d%H%M%S')
+    return int(time.mktime(dt.timetuple()))
 
 def query_vessels_by_time(cursor, time_condition):
     query = '''

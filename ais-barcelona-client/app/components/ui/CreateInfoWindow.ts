@@ -40,10 +40,24 @@ const CreateInfoWindow = (
   return infoWindow;
 };
 
-const formatTimestamp = (timestamp: string | undefined): string => {
+// const formatTimestamp = (timestamp: string | undefined): string => {
+//   if (!timestamp) return 'N/A';
+//   const formatted = `${timestamp.substring(6, 8)}/${timestamp.substring(4, 6)}/${timestamp.substring(0, 4)} ${timestamp.substring(8, 10)}:${timestamp.substring(10, 12)}:${timestamp.substring(12, 14)}`;
+//   return formatted;
+// };
+const formatTimestamp = (timestamp: number | undefined): string => {
   if (!timestamp) return 'N/A';
-  const formatted = `${timestamp.substring(6, 8)}/${timestamp.substring(4, 6)}/${timestamp.substring(0, 4)} ${timestamp.substring(8, 10)}:${timestamp.substring(10, 12)}:${timestamp.substring(12, 14)}`;
-  return formatted;
+
+  const date = new Date(timestamp * 1000);
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 };
 
 let currentPolyline: any = null;
@@ -61,11 +75,10 @@ const clearExistingMarkers = () => {
 };
 
 const drawTrackLine = (
-  positions: Array<{ lat: number; lon: number; timestamp: string }>,
+  positions: Array<{ lat: number; lon: number; timestamp: number }>,
   map: google.maps.Map,
 ) => {
   clearExistingMarkers();
-
   const path = positions.map((position) => ({
     lat: position.lat,
     lng: position.lon,
@@ -83,23 +96,17 @@ const drawTrackLine = (
 
   let lastAddedTime = new Date(0);
 
-  const parseTimestamp = (timestamp: string) => {
-    return new Date(
-      parseInt(timestamp.substring(0, 4), 10), // year
-      parseInt(timestamp.substring(4, 6), 10) - 1, // month (0-based)
-      parseInt(timestamp.substring(6, 8), 10), // day
-      parseInt(timestamp.substring(8, 10), 10), // hour
-      parseInt(timestamp.substring(10, 12), 10), // minute
-      parseInt(timestamp.substring(12, 14), 10), // second
-    );
+  const parseTimestamp = (timestamp: number): Date => {
+    return new Date(timestamp * 1000);
   };
 
   positions.forEach((position) => {
     const positionTime = parseTimestamp(position.timestamp);
+
     if (positionTime.getTime() - lastAddedTime.getTime() >= 300000) {
       const tag = document.createElement('div');
       tag.className = 'dot';
-      // tag.textContent = formatTimestamp(position.timestamp);
+
       const marker = new google.maps.marker.AdvancedMarkerElement({
         position: { lat: position.lat, lng: position.lon },
         map: map,
@@ -116,6 +123,7 @@ const drawTrackLine = (
       });
 
       currentMarkers.push(marker);
+
       lastAddedTime = positionTime;
     }
   });
