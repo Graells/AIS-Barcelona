@@ -31,6 +31,16 @@ def create_database():
         )
     ''')
 
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_positions_timestamp 
+        ON positions (timestamp);
+    ''')
+
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_vessels_lastUpdateTime 
+        ON vessels (lastUpdateTime);
+    ''')
+
     conn.commit()
     conn.close()
 

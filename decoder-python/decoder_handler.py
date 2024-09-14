@@ -236,18 +236,41 @@ def custom_serializer(obj):
         return obj
     return str(obj) 
 
-def process_and_save_data():
+
+def get_updated_files_from_log(log_file='rsync.log'):
+    updated_files = []
+    with open(log_file, 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            if '.txt' in line:
+                parts = line.split()  
+                file_path = parts[-1] 
+                if file_path.endswith('.txt'): 
+                    updated_files.append(file_path)
+                else:
+                    print(f"Skipping non-txt file: {file_path}")
+    print('UPDATED FILES:', updated_files)
+    return updated_files
+
+
+
+def process_and_save_data(updated_files):
     base_path = pathlib.Path(__file__).parent
     files_directory = pathlib.Path(__file__).parent.joinpath('input')
-    files = list(files_directory.glob('*.txt'))
-    try:
-        processed_data = process_data(files)
-        filtered_data = filter_data(processed_data)
-        service = TagsProcessingService()
-        vessel_data = service.process_sentences(filtered_data)
 
-    except Exception as e:
-        logger.error(f"An error occurred: {e}")
+    files = [files_directory.joinpath(file) for file in updated_files if file.endswith('.txt')]
+
+    if files:
+        try:
+            processed_data = process_data(files)
+            filtered_data = filter_data(processed_data)
+            service = TagsProcessingService()
+            vessel_data = service.process_sentences(filtered_data)
+
+        except Exception as e:
+            logger.error(f"An error occurred: {e}")
+    else:
+        logger.info("No new or updated files to process.")
 
 def run_fetch_script():
     script_path = './fetchRsyncFromRaspberry.sh'
@@ -260,6 +283,10 @@ def run_fetch_script():
         logger.error(f"STDOUT: {e.stdout}")
         logger.error(f"STDERR: {e.stderr}")
 
+def truncate_rsync_log(log_file='rsync.log'):
+    with open(log_file, 'w'):
+        pass
+
 def main_loop():
     last_cleanup_time = time.time()
     cleanup_interval = 3600 # 1 hour
@@ -267,19 +294,25 @@ def main_loop():
         logging.info("Starting data processing loop.")
         begin = time.time()
         start = time.time()
+
         run_fetch_script()
+        updated_files = get_updated_files_from_log('rsync.log')
         log_time_taken(start, "Run fetch script")
         start = time.time()
-        process_and_save_data()
+
+        process_and_save_data(updated_files)
+        
         log_time_taken(start, "Process and save data")
         start = time.time()
         if time.time() - last_cleanup_time >= cleanup_interval:
             cleanup_old_data()
             last_cleanup_time = time.time()
         log_time_taken(start, "Cleanup old data")
+        truncate_rsync_log('rsync.log')
         log_time_taken(begin, "Total loop time")
-        logging.info("Data processing completed. Waiting 5 minutes.")
-        time.sleep(300)
+        logging.info("Data processing completed. Waiting 2 minutes.")
+        time.sleep(120)
+
 
 if __name__ == "__main__":
     main_loop()
