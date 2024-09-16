@@ -153,7 +153,7 @@ export default function Home() {
                   </div>
                 </div>
                 <p>
-                  Updates every 60 to 90 seconds (click the refresh button).
+                  Updates every 4 minutes for now (click the refresh button).
                 </p>
                 <p className="font-bold  ">
                   Data collected over the last 24 hours, covering a range of

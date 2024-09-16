@@ -249,7 +249,6 @@ def get_updated_files_from_log(log_file='rsync.log'):
                     updated_files.append(file_path)
                 else:
                     print(f"Skipping non-txt file: {file_path}")
-    print('UPDATED FILES:', updated_files)
     return updated_files
 
 
@@ -257,6 +256,9 @@ def get_updated_files_from_log(log_file='rsync.log'):
 def process_and_save_data(updated_files):
     base_path = pathlib.Path(__file__).parent
     files_directory = pathlib.Path(__file__).parent.joinpath('input')
+
+    updated_files = updated_files[-6:]
+    print('UPDATED FILES:', updated_files)
 
     files = [files_directory.joinpath(file) for file in updated_files if file.endswith('.txt')]
 
@@ -310,8 +312,8 @@ def main_loop():
         log_time_taken(start, "Cleanup old data")
         truncate_rsync_log('rsync.log')
         log_time_taken(begin, "Total loop time")
-        logging.info("Data processing completed. Waiting 2 minutes.")
-        time.sleep(120)
+        logging.info("Data processing completed. Waiting 4 minutes.")
+        time.sleep(240)
 
 
 if __name__ == "__main__":

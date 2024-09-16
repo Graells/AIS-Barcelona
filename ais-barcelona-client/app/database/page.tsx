@@ -316,7 +316,7 @@ export default function Database() {
                 </p>
                 <p>
                   Last update:{' '}
-                  {formatTimestamp(vessel.lastUpdateTime).toString()}
+                  {formatTimestamp(Number(vessel.lastUpdateTime)).toString()}
                 </p>
               </div>
             ))
@@ -358,7 +358,7 @@ export default function Database() {
                 </p>
                 <p>
                   Last update:{' '}
-                  {formatTimestamp(vessel.lastUpdateTime).toString()}
+                  {formatTimestamp(Number(vessel.lastUpdateTime)).toString()}
                 </p>
               </div>
             ))}
