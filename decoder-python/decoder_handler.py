@@ -93,7 +93,7 @@ def cleanup_old_data():
     with get_db_connection() as conn:
         try:
             cursor = conn.cursor()
-            deadline = (datetime.now() - timedelta(hours=96)).strftime('%Y%m%d%H%M%S')
+            deadline = (datetime.datetime.now() - timedelta(hours=96)).strftime('%Y%m%d%H%M%S')
 
             cursor.execute('''
                 DELETE FROM vessels
@@ -278,12 +278,23 @@ def run_fetch_script():
     script_path = './fetchRsyncFromRaspberry.sh'
     try:
         result = subprocess.run(script_path, shell=True, capture_output=True, text=True)
-        logger.info("STDOUT: %s", result.stdout)
-        logger.error("STDERR: %s", result.stderr)
+        print(f"Fetch result: {result}")
+        
+        if result.returncode != 0:
+            logger.error(f"Fetch script failed with return code {result.returncode}")
+            if result.stderr:
+                logger.error(f"STDERR: {result.stderr}")
+            else:
+                logger.error("Fetch script failed but no STDERR was provided.")
+        else:
+            logger.info(f"Fetch script executed successfully. STDOUT: {result.stdout}")
+        
     except subprocess.CalledProcessError as e:
-        logger.error(f"An error occurred: {e}")
+        logger.error(f"An error occurred while running the fetch script: {e}")
         logger.error(f"STDOUT: {e.stdout}")
         logger.error(f"STDERR: {e.stderr}")
+
+
 
 def truncate_rsync_log(log_file='rsync.log'):
     with open(log_file, 'w'):
@@ -302,8 +313,12 @@ def main_loop():
         log_time_taken(start, "Run fetch script")
         start = time.time()
 
-        process_and_save_data(updated_files)
-        
+        try:
+            process_and_save_data(updated_files)
+        except Exception as e:
+            logger.error(f"An error occurred in process_and_save_data: {e}")
+            continue # Skip to the next iteration on error
+
         log_time_taken(start, "Process and save data")
         start = time.time()
         if time.time() - last_cleanup_time >= cleanup_interval:
