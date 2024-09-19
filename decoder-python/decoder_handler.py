@@ -93,7 +93,7 @@ def cleanup_old_data():
     with get_db_connection() as conn:
         try:
             cursor = conn.cursor()
-            deadline = (datetime.datetime.now() - timedelta(hours=96)).strftime('%Y%m%d%H%M%S')
+            deadline = (datetime.datetime.now() - timedelta(hours=96)).timestamp()
 
             cursor.execute('''
                 DELETE FROM vessels
