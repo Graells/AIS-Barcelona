@@ -53,6 +53,7 @@ export default function Database() {
         setLoading(false);
       });
   };
+
   const handleSelectChange = (event: { target: { value: string } }) => {
     const newSelection = event.target.value;
     setTimeInPortResults({});
@@ -98,29 +99,22 @@ export default function Database() {
       }
     }
   };
+
   const handleResetSearch = () => {
     setSearchQuery('');
     setFilteredVessels([]);
     setTimeInPortResults({});
   };
 
-  // const formatTimestamp = (timestamp: string | undefined): string => {
-  //   if (!timestamp) return 'N/A';
-  //   const formatted = `${timestamp.substring(6, 8)}/${timestamp.substring(4, 6)}/${timestamp.substring(0, 4)} ${timestamp.substring(8, 10)}:${timestamp.substring(10, 12)}:${timestamp.substring(12, 14)}`;
-  //   return formatted;
-  // };
   const formatTimestamp = (timestamp: number | undefined): string => {
     if (!timestamp) return 'N/A';
-
-    const date = new Date(timestamp * 1000);
-
+    const date = new Date(timestamp * 1000); // Unix timestamp is in seconds
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');
-
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
@@ -145,47 +139,22 @@ export default function Database() {
     return inside;
   };
 
-  const parseTimestamp = (timestamp: string) => {
-    return new Date(
-      parseInt(timestamp.substring(0, 4), 10), // year
-      parseInt(timestamp.substring(4, 6), 10) - 1, // month (0-based)
-      parseInt(timestamp.substring(6, 8), 10), // day
-      parseInt(timestamp.substring(8, 10), 10), // hour
-      parseInt(timestamp.substring(10, 12), 10), // minute
-      parseInt(timestamp.substring(12, 14), 10), // second
-    );
-  };
-
-  const formatDuration = (totalMinutes: number) => {
-    if (totalMinutes === 0) {
-      return 'Not within port';
-    }
-    const minutesInADay = 1440; // 60 minutes * 24 hours
-    const minutesInAnHour = 60;
-
-    const days = Math.floor(totalMinutes / minutesInADay);
-    const hours = Math.floor((totalMinutes % minutesInADay) / minutesInAnHour);
-    const minutes = Math.round(totalMinutes % minutesInAnHour);
-
-    return `${days} days, ${hours} hours, ${minutes} minutes`;
-  };
-
   const timeInPort = (
-    positions: { lat: number; lon: number; timestamp: string }[],
+    positions: { lat: number; lon: number; timestamp: number }[], // Unix timestamps are now numbers
   ) => {
-    let totalTime: any = 0;
-    let inPort: boolean = false;
+    let totalTime = 0;
+    let inPort = false;
     let entryTime: any = null;
 
     positions.forEach(
-      (position: { lat: number; lon: number; timestamp: string }) => {
+      (position: { lat: number; lon: number; timestamp: number }) => {
         if (position.lat !== undefined && position.lon !== undefined) {
-          const isInPort: any = isPointInPolygon(position.lat, position.lon);
-          if (isInPort && inPort === false) {
-            entryTime = parseTimestamp(position.timestamp);
+          const isInPort = isPointInPolygon(position.lat, position.lon);
+          if (isInPort && !inPort) {
+            entryTime = new Date(position.timestamp * 1000);
             inPort = true;
           } else if (!isInPort && inPort) {
-            const exitTime: any = parseTimestamp(position.timestamp);
+            const exitTime = new Date(position.timestamp * 1000);
             totalTime += exitTime.getTime() - entryTime.getTime();
             inPort = false;
           }
@@ -195,14 +164,28 @@ export default function Database() {
 
     if (inPort) {
       const lastPosition = positions[positions.length - 1];
-      const now = parseTimestamp(lastPosition.timestamp);
-      totalTime += new Date().getTime() - entryTime.getTime(); // If still in port
+      const now = new Date();
+      totalTime += now.getTime() - entryTime.getTime(); // If still in port
     }
-    console.log(`Total time in port in milliseconds: ${totalTime}`);
+
     const totalMinutes = totalTime / 1000 / 60;
-    console.log(`Total time in port in minutes: ${totalMinutes}`);
     return formatDuration(totalMinutes);
   };
+
+  const formatDuration = (totalMinutes: number) => {
+    if (totalMinutes === 0) {
+      return 'Not within port';
+    }
+    const minutesInADay = 1440;
+    const minutesInAnHour = 60;
+
+    const days = Math.floor(totalMinutes / minutesInADay);
+    const hours = Math.floor((totalMinutes % minutesInADay) / minutesInAnHour);
+    const minutes = Math.round(totalMinutes % minutesInAnHour);
+
+    return `${days} days, ${hours} hours, ${minutes} minutes`;
+  };
+
   const calculateTimeInPort = async (mmsi: number) => {
     setLoading(true);
     try {
@@ -215,6 +198,7 @@ export default function Database() {
       setLoading(false);
     }
   };
+
   const sortNames = (a: string | null, b: string | null) => {
     const nameA = a ?? '';
     const nameB = b ?? '';
